@@ -1,0 +1,4 @@
+*.zip
+*.partial
+.web_runtime/
+.install/
