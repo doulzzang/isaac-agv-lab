@@ -1,5 +1,16 @@
 # Isaac AGV Lab
 
+## DGX Spark ARM64 배포본 (2026-09-13)
+
+실제 Spark GPU 실행은 미검증인 API 이전/설치 수정본입니다. 대학원동 자료 미포함, 이후 USD 추가 가능.
+
+- [Spark · Isaac 5.1 ZIP](https://github.com/doulzzang/isaac-agv-lab/releases/download/v2026.09.13-spark/isaac_interactive_physics_lab_spark_isaac51_20260913_154402.zip)
+- [Spark · Isaac 6.0 ZIP](https://github.com/doulzzang/isaac-agv-lab/releases/download/v2026.09.13-spark/isaac_interactive_physics_lab_spark_isaac60_20260913_154403.zip)
+- [Spark 릴리즈 설명](https://github.com/doulzzang/isaac-agv-lab/releases/tag/v2026.09.13-spark)
+
+Spark ZIP은 ARM64 Python 3.12 / CUDA 13 PyTorch / ROS 2 Jazzy용입니다. 아래의 2026-09-09 ZIP은 x86_64용이므로 Spark에서는 사용하지 마세요.
+
+
 Isaac Sim AGV 체험 프로그램의 배포 저장소입니다. 실행 소스와 AI대학원동 USD 자산은 아래 릴리즈 ZIP에 함께 들어 있습니다. 이 저장소를 복제하는 것만으로는 실행할 수 없으며, 대상 환경에 맞는 ZIP을 내려받아 압축을 풀어 설치하세요.
 
 - [최신 릴리즈 및 ZIP 다운로드](https://github.com/doulzzang/isaac-agv-lab/releases/latest)
