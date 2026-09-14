@@ -1,4 +1,6 @@
-# Isaac AGV Lab
+# Isaac Sim을 이용한 물류창고 AGV Robot Agentic 체험
+
+2026-09-14: 모든 배포 ZIP의 조작 화면 제목을 정식 명칭으로 갱신했습니다. 파일명·다운로드 링크는 유지하며 SHA256은 변경되었습니다.
 
 ## DGX Spark ARM64 배포본 (2026-09-13)
 
