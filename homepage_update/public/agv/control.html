@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Isaac Sim을 이용한 물류창고 AGV Robot Agentic 체험</title>
+<style>
+:root { color-scheme: dark; font-family: Arial, "Noto Sans KR", sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #11151a; color: #f4f6f8; }
+header { position: sticky; top: 0; z-index: 3; padding: 14px 18px; background: #171d24; border-bottom: 1px solid #34404c; }
+.header-row { display:grid; grid-template-columns:minmax(180px,1fr) auto minmax(180px,1fr); align-items:center; gap:14px; }
+h1 { grid-column:2; margin: 0; text-align: center; font-size: clamp(26px, 3vw, 44px); line-height: 1.2; font-weight: 800; letter-spacing: -0.02em; }
+.header-actions { grid-column:3; justify-self:end; }
+#nextExperience { min-height:38px; background:#a06b18; white-space:nowrap; }
+#status { margin-top: 6px; color: #b7c6d6; font-size: 13px; }
+#keyFocus { margin-top: 6px; color: #ffcf66; font-size: 13px; font-weight: 700; }
+#keyFocus.ready { color: #70e29a; }
+main { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; padding: 14px; }
+section { border: 1px solid #34404c; border-radius: 10px; padding: 12px; background: #1a2027; }
+h2 { margin: 0 0 10px; font-size: 16px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.drive { display: grid; grid-template-columns: repeat(3, 72px); justify-content: center; gap: 7px; }
+.drive .up { grid-column: 2; }
+.drive .left { grid-column: 1; grid-row: 2; }
+.drive .stop { grid-column: 2; grid-row: 2; }
+.drive .right { grid-column: 3; grid-row: 2; }
+.drive .down { grid-column: 2; grid-row: 3; }
+button { min-height: 40px; border: 0; border-radius: 7px; padding: 7px 8px; color: white; font-size: 14px; font-weight: 700; box-shadow: inset 0 0 0 1px #ffffff25; transition: filter .12s, transform .12s, box-shadow .12s; }
+button:not(:disabled) { cursor: pointer; }
+button:not(:disabled):hover { filter: brightness(1.18); box-shadow: inset 0 0 0 2px #ffffff70, 0 0 0 2px #ffffff20; }
+button:not(:disabled):active { transform: translateY(1px); filter: brightness(.9); }
+button:disabled { cursor: not-allowed; opacity: .45; filter: grayscale(.45); }
+.scene button { background: #2e649a; }
+.worker button { background: #3e7639; }
+.face button { background: #326eb2; }
+.temperature button { background: #b54641; }
+.robot button, .view button { background: #60717b; }
+.physics button { background: #5b5b5b; }
+.appearance button { background: #2c5575; }
+.agent button { background: #783e74; }
+.guide { grid-column:1 / -1; }
+.guide-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:8px; }
+.guide-item { padding:10px; border-radius:7px; background:#111820; border:1px solid #344657; font-size:13px; line-height:1.5; }
+.guide-item code { color:#ffe36e; white-space:normal; }
+.guide-item .auto-experience { width:100%; margin-top:8px; min-height:36px; background:#8b6421; }
+.danger { background: #b52e37 !important; }
+textarea { width: 100%; min-height: 72px; resize: vertical; margin-bottom: 7px; border: 1px solid #526171; border-radius: 7px; background: #0f1317; color: white; padding: 9px; font-size: 14px; }
+input[type="file"] { width: 100%; margin-bottom: 8px; padding: 8px; border: 1px solid #526171; border-radius: 7px; background: #0f1317; color: #dce8f2; cursor: pointer; }
+.note { margin: 8px 0 0; color: #aab8c5; font-size: 12px; line-height: 1.4; }
+.status-panel { grid-column: 1 / -1; border-color: #4a657c; }
+.status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 7px; }
+.status-item { min-height: 46px; padding: 8px 10px; border-radius: 7px; background: #10161c; border: 1px solid #2d3b47; }
+.status-name { display: block; color: #8fa6b9; font-size: 11px; margin-bottom: 4px; }
+.status-value { display: block; color: #ffffff; font-size: 15px; font-weight: 700; }
+.status-message { margin-top: 8px; min-height: 48px; padding: 9px; white-space: pre-wrap; border-radius: 7px; background: #0d1217; color: #c9d8e5; }
+#busyBanner { position: fixed; right: 18px; top: 18px; z-index: 20; display: flex; align-items: center; gap: 10px; max-width: min(420px, calc(100vw - 36px)); padding: 12px 15px; border: 1px solid #6aa6d9; border-radius: 9px; background: #12283bdc; color: #fff; font-weight: 700; box-shadow: 0 8px 28px #0009; pointer-events: none; }
+#busyBanner[hidden] { display: none; }
+.camera-panel { grid-column: span 2; }
+#cameraFeed { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:#050708; border:1px solid #465564; border-radius:8px; }
+.spinner { width: 22px; height: 22px; flex: 0 0 22px; border: 3px solid #ffffff38; border-top-color: #7ec8ff; border-radius: 50%; animation: spin .75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width:900px) { .header-row { grid-template-columns:1fr; } h1,.header-actions { grid-column:1; justify-self:center; } }
+.object-editor label { display:block; font-size:13px; margin:8px 0; }
+.object-editor input, .object-editor select { box-sizing:border-box; width:100%; padding:8px; background:#182334; color:#fff; border:1px solid #53657a; border-radius:5px; }
+.object-editor button { background:#34616a; }
+
+.judgment {--event-color:#0f766e; margin:12px 0 20px;}
+.judgment[data-kind="sensor"] {--event-color:#0f766e;}
+.judgment[data-kind="plan"] {--event-color:#c66b06;}
+.judgment[data-kind="action"] {--event-color:#2563eb;}
+.judgment[data-kind="safe"] {--event-color:#dc2626;}
+.judgment[data-kind="done"] {--event-color:#16803d;}
+.judgment[data-kind="error"] {--event-color:#8b1422;}
+.judgment-bubble {position:relative;border:2px solid var(--event-color);border-left-width:6px;border-radius:15px;padding:14px;background:#f8fafc;color:#172033;overflow-wrap:anywhere;}
+.judgment-bubble::after {content:"";position:absolute;bottom:-11px;left:26px;border-top:11px solid var(--event-color);border-right:12px solid transparent;}
+.judgment-tag {color:var(--event-color);font-weight:700;}
+#judgmentText {font-size:17px;line-height:1.55;margin:8px 0;white-space:pre-wrap;}
+#judgmentFacts {white-space:pre-wrap;overflow-wrap:anywhere;}
+#judgmentHistory {max-height:220px;overflow:auto;padding-left:0;list-style:none;}
+#judgmentHistory li {border-left:4px solid var(--event-color);margin:7px 0;padding:5px 9px;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;}
+
+#navigationMap {display:block;width:100%;aspect-ratio:1;background:#111c2c;border-radius:10px;cursor:crosshair;touch-action:manipulation}
+#navigationMapNote {min-height:2.5em}
+main {grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+h1 {font-size:32px;word-break:keep-all}
+.header-row {grid-template-columns:1fr auto} h1 {grid-column:1;text-align:left}.header-actions {grid-column:2}
+@media(max-width:1000px){main{grid-template-columns:repeat(2,minmax(0,1fr))}.camera-panel{grid-column:1/-1}}
+@media(max-width:650px){main{grid-template-columns:minmax(0,1fr);padding:8px}.header-row{grid-template-columns:1fr}.header-actions{grid-column:1;justify-self:start}h1{font-size:26px}.camera-panel{grid-column:1}}
+
+/* The operator's four primary tools share one console, before all setup tools. */
+.operator-console {grid-column:1/-1;padding:12px;border-color:#527890;min-width:0}
+.operator-console > h2 {font-size:16px;margin-bottom:10px}
+.operator-grid {display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,1fr);grid-template-areas:"camera drive" "messages llm";gap:10px;align-items:stretch}
+.operator-tile {min-width:0;padding:10px;border:1px solid #34404c;border-radius:9px;background:#10171f}
+.operator-tile h3 {margin:0 0 8px;font-size:14px;color:#b9d5e9}
+.operator-camera {grid-area:camera}.operator-drive {grid-area:drive}.operator-messages {grid-area:messages}.operator-llm {grid-area:llm}
+.operator-camera #cameraFeed {height:clamp(170px,32vh,300px);aspect-ratio:auto;object-fit:contain}
+.operator-camera .note {margin:5px 0 0;font-size:11px}
+.operator-drive #activateKeys {min-height:34px;margin:0 0 5px!important}
+.operator-drive #keyFocus {margin:4px 0 8px;font-size:11px;line-height:1.4;min-height:15px}
+.operator-drive .drive {grid-template-columns:repeat(3,minmax(48px,76px));gap:5px}
+.operator-drive .drive button {min-height:38px;padding:4px}
+.operator-drive .grid {margin-top:7px!important}.operator-drive .grid button {min-height:32px;font-size:12px}
+.operator-drive details {margin-top:7px;font-size:11px;color:#aab8c5}
+.operator-messages .judgment {margin:0}.operator-messages .judgment-bubble {padding:8px 10px;border-radius:8px}
+.operator-messages .judgment-bubble::after {display:none}
+.operator-messages #judgmentText {font-size:14px;line-height:1.5;margin:5px 0;min-height:6em;max-height:10em;overflow:auto}
+.operator-messages #judgmentSource {font-size:10px}.operator-messages #narratorStatus {margin:5px 0;font-size:11px}
+.operator-messages details {font-size:11px}.operator-messages #judgmentHistory {height:150px;max-height:150px;margin-bottom:0}
+.operator-llm textarea {min-height:70px;height:76px;margin:0 0 7px;font-size:14px}
+.operator-llm button {min-height:36px;width:100%;background:#783e74}
+body > header {padding:9px 16px}.header-row h1 {font-size:26px}
+body > header > .note {display:none}
+@media(max-width:650px){
+ .operator-console {padding:8px}.operator-grid {grid-template-columns:minmax(0,1fr);grid-template-areas:"camera" "messages" "drive" "llm";gap:8px}
+ .operator-camera #cameraFeed {height:160px}.operator-tile {padding:8px}
+ .operator-drive .drive {grid-template-columns:repeat(3,64px)}
+ .operator-drive .drive button {min-height:36px}
+}
+
+@media(min-width:651px) and (max-height:700px){.operator-console{padding:8px}.operator-tile{padding:8px}.operator-grid{gap:8px}.operator-console > h2{margin-bottom:6px}.operator-drive .drive button{min-height:30px;padding:6px}.operator-camera #cameraFeed{height:170px} header{padding:8px 16px}.operator-llm textarea{height:60px;min-height:60px}#requestControl,#releaseControl{min-height:28px;padding:4px 8px;font-size:12px}#controlState{font-size:12px}}
+.mission-readout{margin-top:8px;padding:8px;border:1px solid #607783;border-radius:6px;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.mission-readout strong,.mission-readout span{display:block}.mission-readout small{display:block;margin-top:5px;opacity:.8}
+.object-file-drop{display:flex;flex-direction:column;align-items:center;gap:7px;margin:10px 0 6px;padding:22px 12px;min-height:140px;box-sizing:border-box;border:3px dashed #59bdd9;border-radius:10px;background:#163345;color:#eefaff;text-align:center;cursor:pointer;overflow-wrap:anywhere}.object-file-drop strong{font-size:16px}.object-file-drop small{font-size:12px;line-height:1.6;color:#c4dce6}.object-file-drop:hover,.object-file-drop:focus-visible{background:#204b60;outline:3px solid #a2e8fa;outline-offset:2px}.object-file-pick{padding:4px 12px;border:1px solid #7bd2e9;border-radius:5px;font-size:13px}
+</style>
+</head>
+<body tabindex="-1">
+<div id="busyBanner" hidden><span class="spinner" aria-hidden="true"></span><span id="busyText">처리 중...</span></div>
+<header>
+  <div class="header-row"><h1>Isaac Sim을 이용한 물류창고 AGV Robot Agentic 체험</h1><div class="header-actions"><button id="nextExperience" data-action="prepare_next_experience">다음 체험 준비</button></div></div>
+  <div id="status">홈페이지 연결 · 운영 PC 상태 확인 중</div>
+  
+</header>
+<main>
+<section class="operator-console" aria-label="AGV 통합 운전 패널"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px"><h2 style="font-size:16px;margin:0">AGV 운전 패널</h2><span id="controlState" role="status">관찰 모드 · 조작권 확인 중</span><button id="requestControl">조작권 요청</button><button id="releaseControl" hidden>조작권 반납</button><small>STOP은 모든 접속자 사용 가능</small></div><div class="operator-grid">
+<div class="operator-tile operator-camera"><h3>전방 카메라</h3><img id="cameraFeed" alt="AGV 전방 카메라 영상" src="/api/isaac/camera.jpg">
+    <p class="note" id="cameraState">Lab 1-C 이후 초당 약 2회 갱신됩니다.</p>
+  </div>
+<div class="operator-tile operator-drive robot"><h3>키보드·수동 조작</h3>
+    <button id="activateKeys" type="button" style="width:100%;margin-bottom:9px">키보드 운전 활성화</button>
+    <div id="keyFocus">키보드 운전 대기 · 아래 활성화 버튼을 누르세요</div><div class="drive">
+      <button class="up" data-hold="robot_forward">↑</button>
+      <button class="left" data-hold="robot_left">←</button>
+      <button class="stop danger" data-action="robot_stop">STOP</button>
+      <button class="right" data-hold="robot_right">→</button>
+      <button class="down" data-hold="robot_backward">↓</button>
+    </div>
+    <div class="grid" style="margin-top:8px"><button data-action="robot_reset" title="AGV의 위치와 방향을 생성 당시로 복원합니다">로봇 시작 위치로</button><button data-action="robot_release">Release Keys</button></div>
+    <details><summary>키보드·정지 조작 안내</summary><p class="note">브라우저가 앞에 있을 때는 ‘키보드 운전 활성화’를 한 번 누른 뒤 화살표 키를 사용합니다. 짧게 눌러도 약 0.45초 이동합니다. STOP은 진행 중인 습도 미션도 취소하고 수동 제어를 즉시 복구합니다. 3.0m 감속·회피, 1.7m 정지·선회, 1.4m 긴급정지.</p></details>
+  </div>
+<div class="operator-tile operator-messages"><h3>판단·진행 메시지</h3><div id="judgmentPanel" class="judgment" data-kind="sensor">
+      <div class="judgment-bubble">
+        <strong>AGV 판단 메시지</strong> · <span id="judgmentCategory" class="judgment-tag">관찰·센서</span>
+        <p id="judgmentText" role="status" aria-live="polite">상황 이벤트를 기다립니다.</p>
+        <small id="judgmentSource">실제 코드 상태 기반</small>
+        <details id="judgmentDetails" hidden><summary>코드가 확인한 원문</summary><p id="judgmentFacts"></p></details>
+        <button id="judgmentAck" data-action="message_ack" hidden>경고 확인</button>
+      </div>
+      <p class="note" id="narratorStatus">Ollama 설명 준비 중</p>
+      <div class="recent-history"><strong>최근 메시지 · 이전 기록은 스크롤</strong><ol id="judgmentHistory"></ol></div>
+    </div>
+    </div>
+<div class="operator-tile operator-llm agent"><h3>LLM 명령 · Ollama</h3>
+    <textarea id="prompt" aria-label="LLM 주행 명령" placeholder="예: 앞으로 1미터 가고 오른쪽으로 45도 돌아"></textarea>
+    <button style="width:100%" id="runPrompt">LLM 명령 실행</button>
+  </div>
+</div></section>
+  
+
+  <section class="object-editor"><h2>AGV 주행 방식</h2>
+    <p id="navigationCurrent">현재 방식 확인 중...</p>
+    <label>목표점 접근 방식<select id="navigationMode">
+      <option value="builtin">기존 주행</option>
+      <option value="nav2" disabled>Nav2 주행 · 연결 확인 전</option>
+      <option value="learned" disabled>학습 모델 주행 · 연결 확인 전</option>
+    </select></label>
+    <div class="grid"><button id="navigationApply" type="button">선택한 방식 적용</button><button data-action="navigation_refresh">연결 상태 확인</button></div>
+    <ul id="navigationAvailability"></ul>
+    <p class="note">학습 모델: NoMaD가 AGV 카메라로 경로 후보를 생성합니다. 목표 방향 정렬과 후보의 목표 접근·충돌 여유 검사는 공통 제어를 사용합니다.</p>
+    <p>아래 지도의 빈 바닥을 클릭해 목표를 선택한 뒤 주행 버튼을 누르세요.</p>
+    <svg id="navigationMap" viewBox="0 0 440 440" role="img" aria-label="목표점 선택 지도. 위에서 본 장면이며 위쪽이 +Y, 오른쪽이 +X입니다."></svg>
+    <p class="note">파란색: AGV와 전방 방향 · 회색: 장애물 · 초록색: 선택한 목표<br>위에서 본 장면입니다. 위쪽 +Y / 오른쪽 +X · 지도 범위 ±11m, 목표 선택 범위 ±10m</p>
+    <p id="navigationMapNote" role="status">장면 위치를 불러오는 중입니다.</p>
+    <details><summary>좌표 직접 입력</summary>
+    <div class="grid"><label>목표 X (m)<input id="navigationGoalX" type="number" value="-1" min="-10" max="10" step="0.5"></label><label>목표 Y (m)<input id="navigationGoalY" type="number" value="-3" min="-10" max="10" step="0.5"></label></div>
+    </details>
+    <button id="navigationGo">선택한 목표로 주행</button>
+    <p class="note">목표점으로 접근하는 방식을 선택합니다. 수동 주행·박스 밀기·사람 접근 제한은 공통 제어를 사용합니다. 연결되지 않은 방식은 선택할 수 없으며, 주행 중 연결이 끊어지면 정지합니다.</p>
+  </section>
+<div class="scene-controls" style="display:flex;flex-direction:column;gap:12px;min-width:0"><section class="scene"><h2>장면 생성</h2><div class="grid">
+    <button data-action="scene_minimal">Lab 1-A Minimal</button>
+    <button data-action="scene_warehouse">Lab 1-B Warehouse</button>
+    <button data-action="add_agv">Lab 1-C Add AGV</button>
+    <button data-action="humidity_prepare">Lab 2 Humidity</button>
+  </div></section>
+<section class="temperature"><h2>습도 미션</h2><div class="grid">
+    <button data-action="humidity_up">습도 시뮬레이션 +5%p</button><button data-action="humidity_down">습도 시뮬레이션 -5%p</button>
+  </div>
+  <div class="mission-readout" role="status" aria-live="polite">
+    <div><strong>버튼 · 연습 습도</strong><span id="missionUiHumidity">측정 대기</span></div>
+    <div><strong>USB · 실제 습도</strong><span id="missionUsbHumidity">센서 대기</span></div>
+    <div><strong>USB · 실제 온도</strong><span id="missionUsbTemperature">센서 대기</span></div>
+    <small>변화: 직전 입력·측정 대비 / 기준 대비: 미션 판단값<br>습도 미션: 20초 이내 +20%p 상승 · 버튼과 센서는 각각 판단</small>
+  </div></section>
+<section class="worker"><h2>Worker</h2><div class="grid three">
+    <button data-action="worker_start">Start</button><button data-action="worker_stop">Stop</button><button data-action="worker_reset">Reset</button>
+    <button data-action="worker_rotate">Rotate +45°</button><button data-action="worker_smaller">Smaller</button><button data-action="worker_larger">Larger</button>
+  </div></section></div>
+<section class="object-editor room-editor"><h2>방·전체 공간 교체</h2>
+    <button id="roomReset" type="button" disabled>현재 공간 처음으로</button><p class="note">현재 공간을 다시 불러옵니다. 추가·삭제·배치 편집은 초기화되고, 일반 공간은 AGV를 다시 추가해야 합니다.</p>
+    <label>공간 종류<select id="roomKind"><option value="warehouse">기존 창고</option><option value="empty">빈 실습실</option><option value="classroom">교실</option><option value="usd">내 USD 공간 파일</option></select></label>
+    <div id="roomUsdFields" hidden>
+      <label>준비된 공간 선택<select id="roomLibrary"><option value="">공간 목록 확인 중…</option></select></label><button data-action="room_refresh" type="button">공간 목록 새로고침</button><p class="note" id="roomLibraryNote">공간을 이름으로 선택하면 됩니다.</p><details><summary>고급 설정 · 운영 PC 경로 직접 입력</summary><label>USD 공간 파일 경로<input id="roomFile" placeholder="운영 PC의 USD 파일 경로"></label></details>
+      <div id="roomDrop" tabindex="0" role="button" aria-label="공간 파일 추가" style="border:2px dashed #7b9bac;border-radius:8px;padding:14px;margin:8px 0;cursor:pointer">공간 파일을 여기로 끌어 놓거나 클릭해 선택<input id="roomUpload" type="file" accept=".usd,.usda,.usdc,.usdz,.zip" hidden><p class="note">USD/USDA/USDC/USDZ/ZIP · 최대 20MB. ZIP은 텍스처 폴더와 함께 올리세요.</p></div><p id="roomUploadStatus" role="status" class="note"></p><label>공간 크기 배율<input id="roomScale" type="number" min="0.001" max="1000" step="0.1" value="1"></label>
+      <div class="grid three"><label>위치 보정 X (m)<input id="roomX" type="number" value="0" step="0.1"></label><label>Y (m)<input id="roomY" type="number" value="0" step="0.1"></label><label>Z (m)<input id="roomZ" type="number" value="0" step="0.1"></label></div>
+      <p class="note">USD/USDA/USDC/USDZ 지원. 길이 단위·위쪽 축을 변환하고 바닥과 중심을 맞춥니다. 외부 텍스처 파일도 같은 경로 구조로 함께 있어야 합니다. 관절 없는 방·건물 환경을 사용하세요.</p>
+    </div>
+    <button id="roomApply" type="button" style="width:100%">이 공간으로 교체</button>
+    <label><input id="roomIncludeLab" type="checkbox" checked style="width:auto"> Worker·습도 미션 박스 포함</label>
+    <p class="note">교체하면 현재 객체 편집과 AGV가 초기화됩니다. 새 공간에서 Add AGV → Lab 2 순서로 준비하세요. 외부 공간에서는 바닥 높이와 AGV 통로를 확인하세요.</p>
+    <hr>
+    <label>현재 장면 저장 이름<input id="roomSaveName" placeholder="예: 책상과 Worker를 바꾼 방" maxlength="60"></label>
+    <button id="roomSave" type="button" style="width:100%">현재 편집 상태 저장</button>
+    <label>저장된 장면<select id="roomSaved"><option value="">저장된 장면을 선택하세요</option></select></label>
+    <div class="grid"><button id="roomLoad" type="button">저장한 상태로 불러오기</button><button data-action="room_refresh" type="button">저장 목록 새로고침</button></div>
+    <p class="note">추가·삭제·모델·배치·Worker·AGV가 현재 상태 그대로 새 파일에 저장됩니다. 같은 이름으로 저장해도 이전 파일을 덮어쓰지 않습니다. 저장 위치: 프로젝트의 saved_scenes 폴더. 외부 텍스처 원본 파일도 함께 유지하세요.</p>
+    <p class="note" id="roomCurrent">현재 공간 확인 중...</p>
+  </section>
+
+  
+
+  
+
+  
+
+  <section class="object-editor" id="objectEditorDrop"><h2>객체·Worker 편집</h2><div class="mission-readout"><p id="sceneSaveState" role="status">공간 편집 후 저장하면 다음 실행에도 유지됩니다.</p><div class="grid"><button id="sceneSaveCurrent" type="button">저장 · 다음 실행에 복원</button><button id="sceneDoNotSave" type="button">저장 안 함</button></div></div>
+    <div id="objectDrop" class="object-file-drop" tabindex="0" role="button" aria-label="객체 USDA 파일 끌어 놓기 또는 파일 선택" aria-describedby="objectDropHelp">
+      <strong>＋ 객체 파일을 여기에 끌어 놓으세요</strong>
+      <span>USDA · USD · USDC · USDZ · ZIP</span>
+      <span class="object-file-pick">또는 클릭하여 파일 선택</span>
+      <small id="objectDropHelp">최대 20MB · ZIP은 텍스처 폴더와 함께 올리세요.<br>파일을 올린 뒤 아래 ‘새 객체 추가’ 또는 ‘선택 객체에 적용·교체’를 누르세요.</small>
+      <input id="objectUpload" type="file" accept=".usd,.usda,.usdc,.usdz,.zip" hidden>
+    </div>
+    <p id="objectUploadStatus" role="status" class="note"></p>
+    <p class="note" id="objectSelectionState">Isaac Sim에서 객체를 클릭하면 자동으로 표시됩니다.</p>
+    <label>현재 객체<select id="objectList"><option value="">객체를 선택하세요</option></select></label>
+    <div class="grid"><button id="objectLoad" type="button">선택 객체 불러오기</button><button id="objectNew" type="button">새 객체 입력</button></div>
+    <label>객체 이름<input id="objectId" value="object_new" maxlength="64" placeholder="예: worker_02"></label>
+    <label>모델<select id="objectModel">
+      <option value="box">박스</option><option value="sphere">구</option><option value="cylinder">원기둥</option>
+      <option value="worker_custom">Worker (기존 인체 모델)</option><option value="worker">Worker (간단한 모델)</option>
+      <option value="robot">창고 로봇 외형</option><option value="forklift">지게차 외형</option><option value="usd">로컬 USD 외형</option>
+    </select></label>
+    <div id="objectUsdRow" hidden><label>준비된 모델 선택<select id="objectLibrary"><option value="">모델을 선택하세요</option></select></label><button data-action="room_refresh" type="button">모델 목록 새로고침</button><details><summary>고급 설정 · 운영 PC 경로 직접 입력</summary><label>USD 파일 경로<input id="objectUsd" placeholder="운영 PC의 USD 모델 경로"></label></details></div>
+    <div class="grid three"><label>위치 X (m)<input id="objectX" type="number" value="0" step="0.1"></label><label>Y (m)<input id="objectY" type="number" value="0" step="0.1"></label><label>Z (m)<input id="objectZ" type="number" value="0.5" step="0.1"></label></div>
+    <div class="grid three"><label>크기 X 배율<input id="objectSx" type="number" value="0.5" step="0.1" min="0.05"></label><label>Y 배율<input id="objectSy" type="number" value="0.5" step="0.1" min="0.05"></label><label>Z 배율<input id="objectSz" type="number" value="0.5" step="0.1" min="0.05"></label></div>
+    <div class="grid three"><label>회전 Z (°)<input id="objectYaw" type="number" value="0" step="15"></label><label>질량 (kg)<input id="objectMass" type="number" value="5" step="1" min="0.01"></label><label>물리<select id="objectMobility"><option value="movable">Movable</option><option value="fixed">Fixed</option><option value="kinematic">Kinematic</option></select></label></div>
+    <div class="grid"><button id="objectApply" type="button">선택 객체에 적용·교체</button><button id="objectAdd" type="button">새 객체 추가</button><button id="objectDelete" class="danger" type="button" disabled>선택 객체 삭제</button></div>
+    <p class="note" id="objectEditorMessage">객체 목록에서 선택한 뒤 불러오세요.</p>
+    <p class="note">적용 시 시뮬레이션이 일시정지됩니다. 미션은 Lab 2로 다시 준비하세요. Warehouse 재생성 시 편집 내용이 초기화됩니다. 기존 worker_01 크기는 같은 0.5~2배, 물리는 Kinematic입니다. 로컬 USD는 외형을 맞춰 불러오며 충돌은 박스입니다.</p>
+  </section>
+
+  <span id="viewportMode" hidden></span>
+
+  
+
+  
+
+  <section class="physics"><h2>선택 객체 물리</h2><div class="grid three">
+    <button data-action="fixed">Fixed</button><button data-action="movable">Movable</button><button data-action="kinematic">Kinematic</button>
+    <button data-action="mass">Mass</button><button data-action="smaller">Smaller</button><button data-action="larger">Larger</button>
+  </div></section>
+
+  <section class="appearance"><h2>선택 객체 외형</h2><div class="grid">
+    <button data-action="color">Change Color</button><button data-action="model">Change Model</button>
+  </div></section>
+
+  <section class="guide"><h2>8종 자동 체험</h2><div class="guide-grid">
+    <div class="guide-item"><strong>1. AGV 이동·회전</strong><br><code>전진 1.5m → 오른쪽 45°</code><button class="auto-experience" data-experience="drive">체험 자동실행</button></div>
+    <div class="guide-item"><strong>2. 라벨 객체 접근</strong><br><code>box_01 식별 → 안전거리 접근</code><button class="auto-experience" data-experience="approach">체험 자동실행</button></div>
+    <div class="guide-item"><strong>3. 반복 충돌</strong><br><code>box_02 충돌·후퇴 3회</code><button class="auto-experience" data-experience="bump">체험 자동실행</button></div>
+    <div class="guide-item"><strong>4. 질량 비교</strong><br><code>pallet_01 10kg ↔ 500kg</code><button class="auto-experience" data-experience="mass">체험 자동실행</button></div>
+    <div class="guide-item"><strong>5. 물리 속성</strong><br><code>box_01 Movable ↔ Fixed</code><button class="auto-experience" data-experience="mobility">체험 자동실행</button></div>
+    <div class="guide-item"><strong>6. 외형·크기</strong><br><code>box_04 빨강 → 1.25배</code><button class="auto-experience" data-experience="appearance">체험 자동실행</button></div>
+    <div class="guide-item"><strong>7. 습도 자동 미션</strong><br><code>습도 시뮬레이션 50→70% → 두 번 밀기</code><button class="auto-experience" data-experience="temperature">체험 자동실행</button></div>
+    <div class="guide-item"><strong>8. Worker 안전</strong><br><code>사람 감지 → 감속·정지·회피</code><button class="auto-experience" data-experience="worker_safety">체험 자동실행</button></div>
+  </div></section>
+
+  
+
+  <section class="status-panel"><h2>실시간 설정·상태값</h2>
+    <div class="status-grid">
+      <div class="status-item"><span class="status-name">연습용 습도 · 버튼으로 조절</span><span class="status-value" data-status="humidity_pct">--</span></div>
+      <div class="status-item"><span class="status-name">USB 실제 온도</span><span class="status-value" data-status="hardware_temperature_c">--</span></div>
+      <div class="status-item"><span class="status-name">USB 연결 오류</span><span class="status-value" data-status="hardware_sensor_error">--</span></div>
+      <div class="status-item"><span class="status-name">USB 미션 조건</span><span class="status-value">20초 내 초기 습도보다 20%p 이상 상승</span></div>
+      <div class="status-item"><span class="status-name">실제 센서 습도 · USB 측정</span><span class="status-value" data-status="hardware_humidity_pct">--</span></div>
+      <div class="status-item"><span class="status-name">시작 습도</span><span class="status-value" data-status="humidity_baseline_pct">--</span></div>
+      <div class="status-item"><span class="status-name">목표 습도</span><span class="status-value" data-status="humidity_target_pct">--</span></div>
+      <div class="status-item"><span class="status-name">센서 읽기 간격(초)</span><span class="status-value" data-status="hardware_sample_interval_s">--</span></div>
+      <div class="status-item"><span class="status-name">습도 센서</span><span class="status-value" data-status="sensor_armed">--</span></div>
+      <div class="status-item"><span class="status-name">미션 상태</span><span class="status-value" data-status="mission_state">--</span></div>
+      <div class="status-item"><span class="status-name">Push Count</span><span class="status-value" data-status="push_count">--</span></div>
+      <div class="status-item"><span class="status-name">box_02 이동거리</span><span class="status-value" data-status="box_moved_m">--</span></div>
+      <div class="status-item"><span class="status-name">AGV 위치</span><span class="status-value" data-status="robot_position">--</span></div>
+      <div class="status-item"><span class="status-name">AGV 방향</span><span class="status-value" data-status="robot_heading_deg">--</span></div>
+      <div class="status-item"><span class="status-name">AGV 실제속도</span><span class="status-value" data-status="robot_speed_mps">--</span></div>
+      <div class="status-item"><span class="status-name">주행 제어 경로</span><span class="status-value" data-status="drive_backend">--</span></div>
+      <div class="status-item"><span class="status-name">백그라운드 물리</span><span class="status-value" data-status="background_simulation">--</span></div>
+      <div class="status-item"><span class="status-name">공통 제어 루프</span><span class="status-value" data-status="control_loop">--</span></div>
+      <div class="status-item"><span class="status-name">브라우저 독립주행</span><span class="status-value" data-status="browser_drive_task">--</span></div>
+      <div class="status-item"><span class="status-name">습도미션 독립주행</span><span class="status-value" data-status="mission_task">--</span></div>
+      <div class="status-item"><span class="status-name">요청 선속도</span><span class="status-value" data-status="requested_linear_mps">--</span></div>
+      <div class="status-item"><span class="status-name">요청 회전속도</span><span class="status-value" data-status="requested_angular_dps">--</span></div>
+      <div class="status-item"><span class="status-name">Worker 위치</span><span class="status-value" data-status="worker_position">--</span></div>
+      <div class="status-item"><span class="status-name">Worker 크기</span><span class="status-value" data-status="worker_scale">--</span></div>
+      <div class="status-item"><span class="status-name">사람 회피</span><span class="status-value" data-status="person_safety">--</span></div>
+      <div class="status-item"><span class="status-name">시뮬레이션</span><span class="status-value" data-status="timeline">--</span></div>
+      <div class="status-item"><span class="status-name">브라우저 주행명령</span><span class="status-value" data-status="external_drive">--</span></div>
+      <div class="status-item"><span class="status-name">체험 활성</span><span class="status-value" data-status="experience_active">--</span></div>
+      <div class="status-item"><span class="status-name">장애물 우회</span><span class="status-value" data-status="avoidance_state">--</span></div>
+      <div class="status-item"><span class="status-name">우회 재시도</span><span class="status-value" data-status="avoidance_retry_count">--</span></div>
+    </div>
+    <div class="status-message" id="isaacMessage">Isaac Sim 상태를 기다리는 중...</div>
+  </section>
+</main>
+<script>
+const nativeFetch = window.fetch.bind(window);
+window.fetch = async (...args) => {
+  const response = await nativeFetch(...args);
+  if (response.status === 401) {
+    window.top.location.replace('/agv');
+    throw new Error('접속 시간이 만료되었습니다. 접속 상태를 다시 확인하세요.');
+  }
+  return response;
+};
+const statusEl = document.getElementById('status');
+const keyFocusEl = document.getElementById('keyFocus');
+const activateKeysButton = document.getElementById('activateKeys');
+const busyBanner = document.getElementById('busyBanner');
+const busyText = document.getElementById('busyText');
+const cameraFeed = document.getElementById('cameraFeed');
+const cameraState = document.getElementById('cameraState');
+let keyboardDriveEnabled = false;
+
+
+function enableKeyboardDrive() {
+  keyboardDriveEnabled = true;
+  document.body.focus({preventScroll:true});
+  keyFocusEl.textContent = '키보드 운전 활성 · ↑ ↓ ← → / Space';
+  keyFocusEl.classList.add('ready');
+}
+
+function isTextEntry(element) {
+  return Boolean(element && (
+    element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' ||
+    element.tagName === 'SELECT' || element.isContentEditable
+  ));
+}
+
+activateKeysButton.addEventListener('click', enableKeyboardDrive);
+document.addEventListener('pointerdown', event => {
+  if (!isTextEntry(event.target)) enableKeyboardDrive();
+}, true);
+window.addEventListener('focus', () => {
+  if (keyboardDriveEnabled && !isTextEntry(document.activeElement)) {
+    document.body.focus({preventScroll:true});
+  }
+});
+const controlToken=crypto.randomUUID()+crypto.randomUUID();
+let hasControl=false, controlBusy=false;
+function showControl(data){
+  const lost=hasControl&&!data.mine;
+  hasControl=!!data.mine;
+  if(lost)releaseDrive(true);
+  document.getElementById('controlState').textContent=hasControl?'조작 중 · 나 ('+data.operator+')':data.held?'관찰 모드 · 현재 조작자: '+data.operator:'관찰 모드 · 조작자 없음';
+  document.getElementById('requestControl').disabled=!!data.held;
+  document.getElementById('releaseControl').hidden=!hasControl;
+}
+async function updateControl(operation){
+  if(controlBusy)return;controlBusy=true;
+  try{
+    const response=await fetch('/api/isaac/control',{method:operation?'POST':'GET',headers:{'Content-Type':'application/json','X-Isaac-Control':controlToken},...(operation?{body:JSON.stringify({operation})}:{})});
+    const data=await response.json();showControl(data);
+    if(!response.ok)statusEl.textContent=data.error||'조작권 확인 실패';
+  }catch{showControl({});document.getElementById('controlState').textContent='연결 끊김 · 조작 중지';}
+  finally{controlBusy=false;}
+}
+document.getElementById('requestControl').onclick=()=>updateControl('acquire');
+document.getElementById('releaseControl').onclick=()=>updateControl('release');
+window.addEventListener('pagehide',()=>{if(hasControl)fetch('/api/isaac/control',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','X-Isaac-Control':controlToken},body:JSON.stringify({operation:'release'})}).catch(()=>{});});
+setInterval(()=>updateControl(hasControl?'renew':null),3000);
+void updateControl();
+async function send(action, value=null) {
+  if(!hasControl && action!=='robot_stop'){statusEl.textContent='관찰 모드입니다. 조작권을 요청하세요.';return;}
+  if(action==='robot_stop'){
+    if(tapTimer){clearTimeout(tapTimer);tapTimer=null;}
+    if(driveHeartbeat){clearInterval(driveHeartbeat);driveHeartbeat=null;}
+    if(releaseTimer){clearTimeout(releaseTimer);releaseTimer=null;}
+    activeDriveAction=null;
+  }
+  try {
+    const response = await fetch('/api/isaac/command', {method:'POST', headers:{'Content-Type':'application/json','X-Isaac-Control':controlToken}, body:JSON.stringify({action,value})});
+    if (!response.ok) { const data = await response.json().catch(()=>({})); throw new Error(data.error || 'HTTP ' + response.status); }
+    statusEl.textContent = '운영 PC로 명령 전달 대기: ' + action;
+  } catch (error) { statusEl.textContent = '연결 오류: ' + error.message; }
+}
+document.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => send(button.dataset.action)));
+document.querySelectorAll('[data-experience]').forEach(button => button.addEventListener('click', () => send('run_experience', button.dataset.experience)));
+let editorObjects = [];
+let editorListSignature = '';
+let editingId = null;
+let selectedRoomObject = "";
+let lastSelectionRevision = null;
+let lastSelectedId = null;
+const objectInput = id => document.getElementById(id);
+function loadEditorObject(o) {
+  editingId = o.id;
+  objectInput('objectList').value = o.id;
+  for (const [id,v] of Object.entries({objectId:o.id,objectModel:o.model,objectUsd:o.usd,objectX:o.position[0],objectY:o.position[1],objectZ:o.position[2],objectSx:o.scale[0],objectSy:o.scale[1],objectSz:o.scale[2],objectYaw:o.yaw,objectMass:o.mass,objectMobility:o.mobility})) objectInput(id).value=v;
+  objectInput('objectId').readOnly=true;
+  objectInput('objectUsdRow').hidden=o.model!=='usd';
+}
+function clearEditorSelection() {
+  editingId=null;
+  objectInput('objectList').value='';
+  objectInput('objectId').value='';
+  objectInput('objectId').readOnly=false;
+  objectInput('objectApply').disabled=true;
+  objectInput('objectDelete').disabled=true;
+}
+function refreshEditor(data) {
+  editorObjects = data.editor_objects || [];
+  const signature = JSON.stringify(editorObjects.map(o => o.id));
+  if (signature !== editorListSignature) {
+    const list = objectInput('objectList'), selected = list.value;
+    list.replaceChildren(new Option('객체를 선택하세요', ''), ...editorObjects.map(o => new Option(o.id, o.id)));
+    if (editorObjects.some(o => o.id === selected)) list.value = selected;
+    editorListSignature = signature;
+  }
+  const selectedId = data.editor_selected_id || null;
+  const revision = data.editor_selection_revision;
+  if (revision !== lastSelectionRevision || selectedId !== lastSelectedId) {
+    const selected = editorObjects.find(o => o.id === selectedId);
+    if (selected) loadEditorObject(selected); else clearEditorSelection();
+    lastSelectionRevision = revision;
+    lastSelectedId = selectedId;
+  } else if (editingId && !editorObjects.some(o => o.id === editingId)) {
+    clearEditorSelection();
+  }
+  selectedRoomObject=data.editor_room_selected_path || '';
+  objectInput('objectSelectionState').textContent = selectedRoomObject ? 'USD 선택 객체 · 삭제 가능: '+selectedRoomObject : selectedId ? 'Isaac Sim 선택: ' + selectedId : (data.editor_selected_path ? '편집 대상 외 선택: ' + data.editor_selected_path : 'Isaac Sim 선택 없음');
+  objectInput('objectEditorMessage').textContent = data.editor_message || '';
+  objectInput('objectApply').disabled = Boolean(data.operation_busy) || !editingId;
+  objectInput('objectDelete').disabled = Boolean(data.operation_busy) || (!editingId && !selectedRoomObject);
+  objectInput('objectAdd').disabled = Boolean(data.operation_busy);
+  objectInput('viewportMode').textContent = data.viewport_only ? '장면만 보기 · 패널 숨김' : '일반 편집 화면';
+}
+objectInput('objectModel').addEventListener('change', () => { objectInput('objectUsdRow').hidden = objectInput('objectModel').value !== 'usd'; });
+function selectEditorObject() {
+  const o = editorObjects.find(o => o.id === objectInput('objectList').value);
+  if (!o) { clearEditorSelection(); return; }
+  loadEditorObject(o);
+  send('object_select', {id:o.id});
+}
+objectInput('objectList').addEventListener('change', selectEditorObject);
+objectInput('objectLoad').addEventListener('click', selectEditorObject);
+objectInput('objectNew').addEventListener('click', () => {
+  editingId=null; objectInput('objectId').readOnly=false; objectInput('objectList').value='';
+  let i=1; while(editorObjects.some(o=>o.id==='object_'+i)) i++;
+  objectInput('objectId').value='object_'+i;
+  for (const id of ['objectX','objectY','objectYaw']) objectInput(id).value=0;
+  objectInput('objectZ').value=objectInput('objectModel').value==='worker_custom'?0:0.5;
+  for (const id of ['objectSx','objectSy','objectSz']) objectInput(id).value=objectInput('objectModel').value==='worker_custom'?1:0.5;
+  objectInput('objectApply').disabled=true;
+  objectInput('objectDelete').disabled=true;
+});
+function submitObject(action) {
+  const num = id => Number(objectInput(id).value);
+  send(action,{id:objectInput('objectId').value,model:objectInput('objectModel').value,usd:objectInput('objectUsd').value,
+    position:['objectX','objectY','objectZ'].map(num),scale:['objectSx','objectSy','objectSz'].map(num),yaw:num('objectYaw'),mass:num('objectMass'),mobility:objectInput('objectMobility').value});
+}
+objectInput('objectApply').addEventListener('click', () => submitObject('object_apply'));
+objectInput('objectAdd').addEventListener('click', () => submitObject('object_add'));
+objectInput('objectDelete').addEventListener('click', () => {
+  if(selectedRoomObject)send('object_delete',{path:selectedRoomObject});
+  else if (editingId) send('object_delete', {id:editingId});
+});
+const pendingAssets={};
+for(const target of ['room','object']){
+ const zone=objectInput(target+'Drop'),input=objectInput(target+'Upload'),status=objectInput(target+'UploadStatus');
+ async function upload(file){
+  if(!file)return;if(!hasControl){status.textContent='조작권을 먼저 요청하세요.';return;}
+  if(target==='object'){objectInput('objectModel').value='usd';objectInput('objectUsdRow').hidden=false;}
+  else {objectInput('roomKind').value='usd';objectInput('roomUsdFields').hidden=false;}
+  if(!/\.(usd|usda|usdc|usdz|zip)$/i.test(file.name)||file.size>20*1024*1024){status.textContent='20MB 이하 USD/USDA/USDC/USDZ/ZIP 파일을 선택하세요.';return;}
+  status.textContent='파일 업로드 중…';
+  try{const r=await fetch('/api/isaac/asset-upload',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Asset-Kind':target,'X-File-Name':encodeURIComponent(file.name),'X-Isaac-Control':controlToken},body:file});const d=await r.json();if(!r.ok)throw new Error(d.error);pendingAssets[target]=d.id;status.textContent=d.message;}catch(e){status.textContent='업로드 실패: '+e.message;}finally{input.value='';}
+ }
+ zone.onclick=e=>{if(e.target!==input)input.click();};zone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click();}};
+ zone.ondragover=e=>{e.preventDefault();zone.style.borderColor='#5ee6a8';};zone.ondragleave=()=>zone.style.borderColor='';zone.ondrop=e=>{e.preventDefault();zone.style.borderColor='';void upload(e.dataTransfer.files[0]);};input.onchange=()=>upload(input.files[0]);
+ if(target==='object'){const panel=objectInput('objectEditorDrop');panel.addEventListener('dragover',e=>e.preventDefault());panel.addEventListener('drop',e=>{if(zone.contains(e.target))return;e.preventDefault();void upload(e.dataTransfer.files[0]);});}
+
+}
+objectInput('objectLibrary').addEventListener('change',()=>{objectInput('objectUsd').value=objectInput('objectLibrary').value;});
+objectInput('roomLibrary').addEventListener('change',()=>{objectInput('roomFile').value=objectInput('roomLibrary').value;if(objectInput('roomKind').value.startsWith('asset:'))objectInput('roomKind').value=objectInput('roomLibrary').value?'asset:'+objectInput('roomLibrary').value:'usd';});
+objectInput('roomKind').addEventListener('change', () => {
+ const value=objectInput('roomKind').value, catalog=value.startsWith('asset:');
+ objectInput('roomUsdFields').hidden = value !== 'usd';
+ if(catalog){objectInput('roomFile').value=value.slice(6);objectInput('roomLibrary').value=value.slice(6);}
+});
+objectInput('roomApply').addEventListener('click', () => send('room_change', {
+  kind:objectInput('roomKind').value.startsWith('asset:')?'usd':objectInput('roomKind').value, usd_path:objectInput('roomFile').value,
+  scale:Number(objectInput('roomScale').value), offset:['roomX','roomY','roomZ'].map(id=>Number(objectInput(id).value)),
+  include_lab:!objectInput('roomIncludeLab').disabled && objectInput('roomIncludeLab').checked
+}));
+objectInput('roomReset').addEventListener('click',()=>{
+ if(confirm('현재 공간을 처음 불러온 상태로 다시 만듭니다. 추가·삭제·배치 편집이 사라지고 큰 USD는 다시 로딩해야 합니다. 계속하시겠습니까?'))send('room_reset',{confirmed:true});
+});
+objectInput('sceneSaveCurrent').addEventListener('click',()=>send('room_save',objectInput('roomSaveName').value||'편집한_공간'));
+objectInput('sceneDoNotSave').addEventListener('click',()=>send('room_discard'));
+objectInput('roomSave').addEventListener('click', () => send('room_save', objectInput('roomSaveName').value));
+objectInput('roomLoad').addEventListener('click', () => { if (objectInput('roomSaved').value) send('room_load', objectInput('roomSaved').value); });
+let savedRoomSignature = '';
+let roomLibrarySignature = '';
+function refreshRoomLibrary(data){
+ if(!Array.isArray(data.room_library)){objectInput('roomLibraryNote').textContent='운영 PC를 업데이트하고 재시작하면 공간 목록이 표시됩니다.';return;}
+ const objectLibrary=Array.isArray(data.object_library)?data.object_library:[];
+ const signature=JSON.stringify([data.room_library,objectLibrary]);if(signature===roomLibrarySignature)return;roomLibrarySignature=signature;
+ const kinds=objectInput('roomKind'),kind=kinds.value;
+ kinds.querySelectorAll('option[data-room-asset]').forEach(option=>option.remove());
+ for(const item of data.room_library){const option=new Option(item.label,'asset:'+item.path);option.dataset.roomAsset='true';kinds.add(option);}
+ if([...kinds.options].some(option=>option.value===kind))kinds.value=kind;
+ else if(kind.startsWith('asset:')){kinds.value='usd';objectInput('roomUsdFields').hidden=false;}
+ const models=objectInput('objectLibrary'),model=models.value;models.replaceChildren(new Option('모델을 선택하세요',''),...objectLibrary.map(item=>new Option(item.label,item.path)));if(objectLibrary.some(item=>item.path===model))models.value=model;
+ const select=objectInput('roomLibrary'),previous=select.value;select.replaceChildren(new Option('공간을 선택하세요',''),...data.room_library.map(item=>new Option(item.label,item.path)));
+ if(data.room_library.some(item=>item.path===previous))select.value=previous;
+ for(const target of ['room','object']){const item=(target==='object'?objectLibrary:data.room_library).find(item=>pendingAssets[target]&&(item.path.endsWith('/'+pendingAssets[target])||item.path.includes('/'+pendingAssets[target]+'/')));if(item){objectInput(target+'Library').value=item.path;objectInput(target==='room'?'roomFile':'objectUsd').value=item.path;objectInput(target+'UploadStatus').textContent='운영 PC에 추가됨 · '+item.label+' · '+(target==='room'?'이 공간으로 교체':'새 객체 추가 또는 선택 객체에 적용')+'를 누르세요.';delete pendingAssets[target];}}
+ objectInput('roomLibraryNote').textContent=data.room_library.length?'공간 선택 후 ‘이 공간으로 교체’를 누르세요.':'준비된 공간이 없습니다. 공간 파일을 추가하세요.';
+}
+
+const MIN_DRIVE_MS = 450;
+let driveStartedAt = 0;
+let activeDriveAction = null;
+let releaseTimer = null;
+let driveHeartbeat = null;
+let tapTimer = null;
+let driveHeld = false;
+
+function startDrive(action) {
+  if(!hasControl){statusEl.textContent="관찰 모드입니다. 조작권을 요청하세요.";return;}
+  if (releaseTimer) { clearTimeout(releaseTimer); releaseTimer = null; }
+  if (activeDriveAction === action) return;
+  activeDriveAction = action;
+  driveStartedAt = performance.now();
+  driveHeld=false;
+  if(tapTimer)clearTimeout(tapTimer);
+  tapTimer=setTimeout(()=>{
+    tapTimer=null;driveHeld=true;
+    send(action);
+    if(driveHeartbeat)clearInterval(driveHeartbeat);
+    driveHeartbeat=setInterval(()=>{if(activeDriveAction)send(activeDriveAction);},300);
+  },250);
+}
+
+function releaseDrive(immediate=false) {
+  if(releaseTimer){clearTimeout(releaseTimer);releaseTimer=null;}
+  if (!activeDriveAction) return;
+  if(tapTimer){clearTimeout(tapTimer);tapTimer=null;}
+  if(!driveHeld){
+    const action=activeDriveAction;activeDriveAction=null;
+    if(!immediate)send(action,{tap_ms:450});
+    return;
+  }
+  const finish = () => {
+    activeDriveAction = null;
+    if (driveHeartbeat) { clearInterval(driveHeartbeat); driveHeartbeat = null; }
+    releaseTimer = null;
+    send('robot_release');
+  };
+  const remaining = immediate ? 0 : Math.max(0, MIN_DRIVE_MS - (performance.now() - driveStartedAt));
+  if (remaining > 0) releaseTimer = setTimeout(finish, remaining);
+  else finish();
+}
+
+document.querySelectorAll('[data-hold]').forEach(button => {
+  button.addEventListener('pointerdown', event => {
+    event.preventDefault();
+    button._drivePressed=true;
+    button.setPointerCapture(event.pointerId);
+    startDrive(button.dataset.hold);
+  });
+  button.addEventListener('pointerup', () => {button._drivePressed=false;releaseDrive(false);});
+  button.addEventListener('pointercancel', () => {button._drivePressed=false;releaseDrive(true);});
+  button.addEventListener('lostpointercapture',()=>{if(button._drivePressed){button._drivePressed=false;releaseDrive(true);}});
+});
+
+const driveKeys = {
+  ArrowUp: 'robot_forward', ArrowDown: 'robot_backward',
+  ArrowLeft: 'robot_left', ArrowRight: 'robot_right'
+};
+document.addEventListener('keydown', event => {
+  if (isTextEntry(event.target)) return;
+  if (driveKeys[event.key]) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!keyboardDriveEnabled) enableKeyboardDrive();
+    if (!event.repeat) startDrive(driveKeys[event.key]);
+  } else if (event.key === ' ') {
+    event.preventDefault();
+    event.stopPropagation();
+    activeDriveAction = null;
+    if (driveHeartbeat) { clearInterval(driveHeartbeat); driveHeartbeat = null; }
+    if (releaseTimer) { clearTimeout(releaseTimer); releaseTimer = null; }
+    send('robot_stop');
+  }
+}, true);
+document.addEventListener('keyup', event => {
+  if (isTextEntry(event.target)) return;
+  if (driveKeys[event.key]) {
+    event.preventDefault();
+    event.stopPropagation();
+    releaseDrive(false);
+  }
+}, true);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseDrive(true);});
+window.addEventListener('pagehide',()=>releaseDrive(true));
+window.addEventListener('blur', () => {
+  releaseDrive(true);
+  keyFocusEl.textContent = '브라우저 포커스 해제 · 창을 클릭하세요';
+  keyFocusEl.classList.remove('ready');
+});
+document.getElementById('runPrompt').addEventListener('click', () => send('agent_prompt', document.getElementById('prompt').value));
+
+function formatStatus(name, value) {
+  if (value === null || value === undefined) return '--';
+  if (name === 'temperature_c' || name === 'threshold_c' || name === 'hardware_temperature_c') return Number(value).toFixed(1) + ' °C';
+  if (name === 'humidity_pct' || name === 'hardware_humidity_pct' || name === 'humidity_baseline_pct' || name === 'humidity_target_pct') return Number(value).toFixed(1) + ' %RH';
+  if (name === 'hardware_sample_interval_s') return Number(value).toFixed(3) + ' s';
+  if (name === 'sensor_armed') return value ? 'READY (ARMED)' : 'NOT ARMED';
+  if (name === 'push_count') return value + ' / 2';
+  if (name === 'box_moved_m') return Number(value).toFixed(3) + ' m';
+  if (name === 'robot_heading_deg') return Number(value).toFixed(1) + '°';
+  if (name === 'robot_speed_mps') return Number(value).toFixed(3) + ' m/s';
+  if (name === 'requested_linear_mps') return Number(value).toFixed(3) + ' m/s';
+  if (name === 'requested_angular_dps') return Number(value).toFixed(1) + '°/s';
+  if (name === 'worker_scale') return Number(value).toFixed(2) + '×';
+  if (name === 'robot_position' || name === 'worker_position') return Array.isArray(value) ? '(' + value.join(', ') + ')' : '--';
+  return String(value);
+}
+
+
+const judgmentCategories = {sensor:'관찰·센서',plan:'판단·계획',action:'행동',safe:'안전·경고',done:'완료·검증',error:'오류·실패'};
+let judgmentSignature = '';
+let roomProgressText='',roomProgressSince=0;
+function roomProgressDisplay(){
+ if(!roomProgressText)return '';
+ const seconds=Math.floor((performance.now()-roomProgressSince)/1000);
+ return roomProgressText+' · 이 안내 수신 후 '+seconds+'초'+(seconds>=15?' · 새 진행 정보 수신 대기':'');
+}
+function showRoomProgress(){
+ if(!roomProgressText)return;
+ const text=roomProgressDisplay();
+ document.getElementById('judgmentText').textContent=text;
+ busyText.textContent=text;
+}
+setInterval(showRoomProgress,1000);
+
+function refreshJudgment(data) {
+  const messages=data.robot_messages || {};
+  const progress=data.operation_busy && /^공간 교체 [1-8]\/8/.test(data.message || '');
+  if(progress){if(roomProgressText!==data.message){roomProgressText=data.message;roomProgressSince=performance.now();}}else roomProgressText='';
+  const current=progress ? {category:'action',text:roomProgressDisplay(),generated:false} : messages.current;
+  document.getElementById('narratorStatus').textContent=data.narrator_status || '기본 설명 사용 중';
+  document.getElementById('judgmentPanel').dataset.kind=current?.category || 'sensor';
+  document.getElementById('judgmentCategory').textContent=judgmentCategories[current?.category] || '대기';
+  document.getElementById('judgmentText').textContent=current?.text || '새로운 상황 이벤트를 기다립니다. 최근 기록은 아래에서 확인하세요.';
+  document.getElementById('judgmentSource').textContent=current?.generated ? 'Ollama가 상황 정보를 문장으로 정리했습니다.' : '코드가 확인한 상황 · 기본 설명';
+  document.getElementById('judgmentDetails').hidden=!current?.generated;
+  document.getElementById('judgmentFacts').textContent=current?.facts || '';
+  document.getElementById('judgmentAck').hidden=!current?.alert;
+  const events=messages.history || [], signature=JSON.stringify(events);
+  if (signature!==judgmentSignature) {
+    judgmentSignature=signature;
+    document.getElementById('judgmentHistory').replaceChildren(...[...events].reverse().map(event=>{
+      const li=document.createElement('li'); li.className='judgment'; li.dataset.kind=event.category;
+      li.textContent=new Date(event.time*1000).toLocaleTimeString('ko-KR',{hour12:false})+'  ['+(judgmentCategories[event.category] || event.category)+'] '+event.text;
+      if(event.generated) li.title='코드 원문: '+event.facts;
+      return li;
+    }));
+  }
+}
+
+let navigationMapState = null;
+let navigationMapUpdated = 0;
+const navMap = document.getElementById('navigationMap');
+const navGoalInputs = ['navigationGoalX','navigationGoalY'].map(id=>document.getElementById(id));
+function mapTargetFromClient(clientX, clientY, bounds) {
+  return [(clientX-bounds.left)/bounds.width*22-11, 11-(clientY-bounds.top)/bounds.height*22];
+}
+function navigationTarget() {return navGoalInputs.map(input=>Number(input.value));}
+function navigationTargetError(target, data) {
+  if(!data || Date.now()-navigationMapUpdated>2500 || !data.navigation_observation?.pose) return '최신 장면 위치를 기다리고 있습니다.';
+  if(target.some(v=>!Number.isFinite(v) || Math.abs(v)>10) || navGoalInputs.some(input=>input.value.trim()==='')) return '지도 안쪽의 바닥을 선택하세요. 목표 범위는 ±10m입니다.';
+  if((data.navigation_observation.rectangles||[]).some(r=>target[0]>=r[0] && target[0]<=r[2] && target[1]>=r[1] && target[1]<=r[3])) return '장애물 내부입니다. 빈 바닥을 선택하세요.';
+  return '';
+}
+function navigationCanGo(data) {
+  return data && !data.operation_busy && !data.external_drive && !(data.manual_keys||[]).length && data.robot_ready && data.navigation?.options.some(item=>item.id===data.navigation.selected && item.ready);
+}
+function drawNavigationMap() {
+  const data=navigationMapState, geometry=data?.navigation_observation;
+  const nodes=[];
+  function add(tag, attrs, text) {
+    const node=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    Object.entries(attrs).forEach(([key,value])=>node.setAttribute(key,String(value)));
+    if(text!==undefined) node.textContent=text;
+    nodes.push(node);return node;
+  }
+  const px=x=>(x+11)*20, py=y=>(11-y)*20;
+  for(let v=-10;v<=10;v++) {
+    add('line',{x1:px(v),y1:20,x2:px(v),y2:420,stroke:v===0?'#64748b':'#25354b','stroke-width':v===0?1.5:1});
+    add('line',{x1:20,y1:py(v),x2:420,y2:py(v),stroke:v===0?'#64748b':'#25354b','stroke-width':v===0?1.5:1});
+    if(v%5===0){add('text',{x:px(v),y:435,fill:'#cbd5e1','font-size':10,'text-anchor':'middle'},v);add('text',{x:4,y:py(v)+3,fill:'#cbd5e1','font-size':10},v);}
+  }
+  add('rect',{x:20,y:20,width:400,height:400,fill:'none',stroke:'#94a3b8','stroke-dasharray':'4 4'});
+  for(const r of geometry?.rectangles||[]) add('rect',{x:px(r[0]),y:py(r[3]),width:(r[2]-r[0])*20,height:(r[3]-r[1])*20,fill:'#64748b',stroke:'#94a3b8','stroke-width':.6});
+  if(geometry?.pose) {
+    const [x,y,yaw]=geometry.pose;
+    const [halfX,halfY]=geometry.robot_half_extents||[.574,.385];
+    add('rect',{x:px(x)-halfX*20,y:py(y)-halfY*20,width:halfX*40,height:halfY*40,rx:3,fill:'#2563eb',stroke:'#93c5fd',transform:`rotate(${-yaw*180/Math.PI} ${px(x)} ${py(y)})`});
+    add('path',{d:`M ${px(x)+22} ${py(y)} l -10 -6 v 12 Z`,fill:'#bfdbfe',transform:`rotate(${-yaw*180/Math.PI} ${px(x)} ${py(y)})`});
+    add('text',{x:px(x),y:py(y)+28,fill:'#93c5fd','font-size':12,'text-anchor':'middle'},'AGV');
+  }
+  const target=navigationTarget(), error=navigationTargetError(target,data);
+  if(target.every(Number.isFinite)) {
+    const color=error?'#f87171':'#4ade80';
+    add('circle',{cx:px(target[0]),cy:py(target[1]),r:(geometry?.robot_clearance_radius||.7415)*20,fill:'none',stroke:color,'stroke-dasharray':'4 3',opacity:.55});
+    add('circle',{cx:px(target[0]),cy:py(target[1]),r:5,fill:color});
+    add('text',{x:px(target[0]),y:py(target[1])-25,fill:color,'font-size':12,'text-anchor':'middle'},'목표');
+  }
+  navMap.replaceChildren(...nodes);
+  let note=error;
+  if(!note) {
+    const distance=Math.hypot(target[0]-geometry.pose[0],target[1]-geometry.pose[1]);
+    const near=(geometry.rectangles||[]).some(r=>Math.hypot(Math.max(r[0]-target[0],0,target[0]-r[2]),Math.max(r[1]-target[1],0,target[1]-r[3]))<(geometry.robot_clearance_radius||.7415));
+    note=`목표 선택됨 · AGV에서 ${distance.toFixed(1)}m 거리. `+(near?'장애물에 가깝습니다. 초록 점선 원 주변에 여유 공간이 있는 곳을 권장합니다.':'주행 버튼을 누르면 출발합니다.');
+  }
+  document.getElementById('navigationMapNote').textContent=note;
+  document.getElementById('navigationGo').disabled=Boolean(error) || !navigationCanGo(data);
+}
+navMap.addEventListener('click',event=>{
+  if(!navigationMapState || Date.now()-navigationMapUpdated>2500) {drawNavigationMap();return;}
+  if(navigationMapState.operation_busy || navigationMapState.external_drive || (navigationMapState.manual_keys||[]).length) {
+    document.getElementById('navigationMapNote').textContent='현재 주행을 STOP으로 정지한 뒤 새 목표를 선택하세요.';return;
+  }
+  const target=mapTargetFromClient(event.clientX,event.clientY,navMap.getBoundingClientRect());
+  navGoalInputs.forEach((input,index)=>{input.value=target[index].toFixed(2);});
+  drawNavigationMap();
+});
+navGoalInputs.forEach(input=>input.addEventListener('input',drawNavigationMap));
+document.getElementById('navigationGo').addEventListener('click',()=>{
+  const target=navigationTarget();
+  if(navigationTargetError(target,navigationMapState) || !navigationCanGo(navigationMapState)) {drawNavigationMap();return;}
+  send('navigation_goal',target);
+});
+let navigationSignature = '';
+let navigationSelection = null;
+document.getElementById('navigationApply').addEventListener('click',()=>send('navigation_select',document.getElementById('navigationMode').value));
+function refreshNavigation(data) {
+  const nav=data.navigation;
+  if(!nav) return;
+  navigationMapState=data; navigationMapUpdated=Date.now();
+  const select=document.getElementById('navigationMode');
+  const signature=JSON.stringify(nav.options);
+  if(signature!==navigationSignature) {
+    const draft=select.value;
+    select.replaceChildren(...nav.options.map(item=>{
+      const option=new Option(item.label+' · '+(item.ready?'사용 가능':'연동 필요'),item.id);
+      option.disabled=!item.ready;
+      return option;
+    }));
+    select.value=nav.options.some(item=>item.id===draft && item.ready)?draft:nav.selected;
+    document.getElementById('navigationAvailability').replaceChildren(...nav.options.map(item=>{
+      const row=document.createElement('li');row.textContent=item.label+': '+item.detail;return row;
+    }));
+    navigationSignature=signature;
+  }
+  if(navigationSelection!==nav.selected){select.value=nav.selected;navigationSelection=nav.selected;}
+  document.getElementById('navigationCurrent').textContent='현재 적용: '+nav.label;
+  const busy=Boolean(data.operation_busy || data.external_drive || (data.manual_keys||[]).length);
+  select.disabled=busy;
+  navGoalInputs.forEach(input=>{input.disabled=busy;});
+  drawNavigationMap();
+  document.getElementById('navigationApply').disabled=busy || !nav.options.some(item=>item.id===select.value && item.ready);
+}
+
+function updateMissionReadout(data){
+ const number=v=>typeof v==='number' && Number.isFinite(v);
+ const value=(v,unit)=>number(v)?v.toFixed(1)+unit:'--';
+ const delta=v=>number(v)?(v>=0?'+':'')+v.toFixed(1)+'%p':'--';
+ function humidity(current,change,baseline,target){
+  return value(current,'%RH')+' · 변화 '+delta(change)+' · 기준 대비 '+delta(number(current)&&number(baseline)?current-baseline:null)+' · 목표 '+value(target,'%RH');
+ }
+ document.getElementById('missionUiHumidity').textContent=humidity(data.humidity_pct,data.ui_humidity_delta_pct,data.ui_humidity_baseline_pct,data.ui_humidity_target_pct);
+ const stale=!number(data.hardware_sample_age_s)||data.hardware_sample_age_s>3||Boolean(data.hardware_sensor_error);
+ const notice=stale?' · 센서 미연결/측정 지연 (마지막 값)':'';
+ document.getElementById('missionUsbHumidity').textContent=humidity(data.hardware_humidity_pct,data.hardware_humidity_delta_pct,stale?null:data.humidity_baseline_pct,stale?null:data.humidity_target_pct)+notice;
+ document.getElementById('missionUsbTemperature').textContent=value(data.hardware_temperature_c,'°C')+notice;
+}
+
+function updatePracticeControls(data){
+ document.getElementById('sceneSaveState').textContent=data.scene_dirty?'저장하지 않은 객체 변경이 있습니다. 다음 실행에도 유지하려면 저장하세요.':(data.startup_scene_file?'다음 실행 복원: '+data.startup_scene_file:'다음 실행용 저장본이 없습니다. 저장하면 현재 공간과 객체 배치를 유지합니다.');
+ document.getElementById('sceneSaveCurrent').disabled=Boolean(data.operation_busy||data.external_drive||(data.manual_keys||[]).length);
+ document.getElementById('sceneDoNotSave').disabled=Boolean(data.operation_busy)||!data.scene_dirty;
+ document.getElementById("roomReset").disabled=!data.room_reset_available||Boolean(data.operation_busy||data.external_drive||(data.manual_keys||[]).length);
+ updateMissionReadout(data);
+ const driveOnly=data.room_kind==='usd' && /(?:^|\/)ForDemo_AI_Graduate_Building\.usd$/.test(data.room_source||'');
+ for(const section of document.querySelectorAll('.temperature,.worker,.guide'))section.hidden=driveOnly;
+ for(const button of document.querySelectorAll('[data-action="humidity_prepare"],[data-action="prepare_next_experience"],[data-experience]')){
+  button.disabled=driveOnly||!!data.operation_busy;
+  button.title=driveOnly?'AI대학원동은 AGV 주행 전용입니다.':'';
+ }
+}
+function updateRoomPracticeOption(){
+ const kind=objectInput('roomKind').value;
+ const path=kind.startsWith('asset:')?kind.slice(6):kind==='usd'?objectInput('roomFile').value:'';
+ const usd=/(?:^|\/)ForDemo_AI_Graduate_Building\.usd$/.test(path);
+ const input=objectInput('roomIncludeLab');input.disabled=usd;input.parentElement.hidden=usd;
+}
+objectInput('roomKind').addEventListener('change',updateRoomPracticeOption);
+objectInput('roomFile').addEventListener('input',updateRoomPracticeOption);
+objectInput('roomLibrary').addEventListener('change',updateRoomPracticeOption);
+updateRoomPracticeOption();
+let statusRefreshBusy=false;
+async function refreshStatus() {
+  if(statusRefreshBusy)return;statusRefreshBusy=true;
+  try {
+    const response = await fetch('/api/isaac/status', {cache:'no-store'});
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const data = await response.json();
+    refreshRoomLibrary(data);
+    updatePracticeControls(data);
+    updateRoomPracticeOption();
+    refreshEditor(data);
+    refreshJudgment(data);
+    refreshNavigation(data);
+    const roomNames = {warehouse:'기존 창고',empty:'빈 실습실',classroom:'교실',usd:'USD 공간',minimal:'최소 시험'};
+    objectInput('roomCurrent').textContent = '현재 공간: ' + (roomNames[data.room_kind] || data.room_kind || '--') + (data.room_source ? ' · ' + data.room_source : '');
+    objectInput('roomApply').disabled = Boolean(data.operation_busy);
+    objectInput('roomSave').disabled = Boolean(data.operation_busy);
+    objectInput('roomLoad').disabled = Boolean(data.operation_busy);
+    const saved = data.saved_rooms || [];
+    const savedSignature = JSON.stringify(saved);
+    if (savedSignature !== savedRoomSignature) {
+      const select = objectInput('roomSaved'), previous = select.value;
+      select.replaceChildren(new Option('저장된 장면을 선택하세요',''), ...saved.map(s=>new Option(s.label,s.file)));
+      if (saved.some(s=>s.file===previous)) select.value=previous;
+      else if (saved.length) select.value=saved[0].file;
+      savedRoomSignature=savedSignature;
+    }
+    document.querySelectorAll('[data-status]').forEach(element => {
+      const name = element.dataset.status;
+      element.textContent = formatStatus(name, data[name]);
+    });
+    document.getElementById('isaacMessage').textContent = data.message || '정상 연결';
+    busyBanner.hidden = !data.operation_busy;
+    busyText.textContent = roomProgressDisplay() || data.message || data.operation_label || '처리 중...';
+    document.body.setAttribute('aria-busy', data.operation_busy ? 'true' : 'false');
+  } catch (error) {
+    document.getElementById('isaacMessage').textContent = '상태 연결 오류: ' + error.message;
+    busyBanner.hidden = true;
+  }finally{statusRefreshBusy=false;}
+}
+refreshStatus();
+setInterval(refreshStatus, 1000);
+let cameraObjectUrl=null;
+async function refreshCamera(){
+ try{
+  const response=await fetch('/api/isaac/camera.jpg?t='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(8000)});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const url=URL.createObjectURL(await response.blob());
+  await new Promise((resolve,reject)=>{cameraFeed.onload=resolve;cameraFeed.onerror=reject;cameraFeed.src=url;});
+  if(cameraObjectUrl)URL.revokeObjectURL(cameraObjectUrl);cameraObjectUrl=url;
+  cameraState.textContent='LIVE · '+new Date().toLocaleTimeString();
+ }catch{cameraState.textContent='영상 수신 대기 · 마지막 수신 화면 유지';}
+ finally{setTimeout(refreshCamera,500);}
+}
+void refreshCamera();
+</script>
+</body>
+</html>
