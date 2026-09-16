@@ -1,5 +1,13 @@
 # Isaac Sim을 이용한 물류창고 AGV Robot Agentic 체험
 
+## 2026-09-16 Ubuntu 22.04 / Isaac 4.5 · x86_64
+
+[다운로드 ZIP](https://github.com/doulzzang/isaac-agv-lab/releases/download/v2026.09.16-isaac45/isaac_interactive_physics_lab_ubuntu22_isaac45_20260916.zip) · [릴리즈 설명](https://github.com/doulzzang/isaac-agv-lab/releases/tag/v2026.09.16-isaac45)
+
+현재 Ubuntu 22.04.5 / Isaac 4.5에서 실제 시험한 최신 별도 배포본입니다. 자동체험 비교 초기화 오류 수정, Worker 관찰 30초 및 실시간 진행 표시를 포함합니다. Worker 회피 동작·주행 재개까지 확인했으며 원래 경로 복귀는 미검증입니다. 대학원동·개인 저장 장면은 포함하지 않습니다. 이후 `room_assets/`에 추가할 수 있습니다. 설치·사용법과 검증 범위는 ZIP의 README.md / VALIDATION.md를 확인하세요. 기존 Spark 배포본은 변경하지 않습니다.
+
+아래 2026-09-09 안내는 과거 배포본 기준입니다. 최신 4.5 설치에는 위 링크와 ZIP 내부 설명을 사용하세요.
+
 2026-09-14: 모든 배포 ZIP의 조작 화면 제목을 정식 명칭으로 갱신했습니다. 파일명·다운로드 링크는 유지하며 SHA256은 변경되었습니다.
 
 ## 2026-09-15 Spark 5.1 / 6.0 갱신
