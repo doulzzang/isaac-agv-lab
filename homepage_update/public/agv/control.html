@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Isaac Sim을 이용한 물류창고 AGV Robot Agentic 체험</title>
+<title>Isaac Sim 물류창고 AGV Robot Agentic 체험(광주과학기술 AI대학원)</title>
 <style>
 :root { color-scheme: dark; font-family: Arial, "Noto Sans KR", sans-serif; }
 * { box-sizing: border-box; }
 body { margin: 0; background: #11151a; color: #f4f6f8; }
-header { position: sticky; top: 0; z-index: 3; padding: 14px 18px; background: #171d24; border-bottom: 1px solid #34404c; }
+header { position: sticky; top: 0; z-index: 3; padding: 14px 18px; background: #263b4d; border-bottom: 2px solid #78b9e8; box-shadow: 0 3px 12px #0008; }
 .header-row { display:grid; grid-template-columns:minmax(180px,1fr) auto minmax(180px,1fr); align-items:center; gap:14px; }
 h1 { grid-column:2; margin: 0; text-align: center; font-size: clamp(26px, 3vw, 44px); line-height: 1.2; font-weight: 800; letter-spacing: -0.02em; }
 .header-actions { grid-column:3; justify-self:end; }
@@ -46,6 +46,8 @@ button:disabled { cursor: not-allowed; opacity: .45; filter: grayscale(.45); }
 .guide-item code { color:#ffe36e; white-space:normal; }
 .guide-item .auto-experience { width:100%; margin-top:8px; min-height:36px; background:#8b6421; }
 .danger { background: #b52e37 !important; }
+.scene-test-dialog{border:1px solid #78b9e8;border-radius:12px;padding:18px;background:#1a2027;color:#f4f6f8;width:min(620px,calc(100vw - 30px))}.scene-test-dialog::backdrop{background:#0009}
+
 textarea { width: 100%; min-height: 72px; resize: vertical; margin-bottom: 7px; border: 1px solid #526171; border-radius: 7px; background: #0f1317; color: white; padding: 9px; font-size: 14px; }
 input[type="file"] { width: 100%; margin-bottom: 8px; padding: 8px; border: 1px solid #526171; border-radius: 7px; background: #0f1317; color: #dce8f2; cursor: pointer; }
 .note { margin: 8px 0 0; color: #aab8c5; font-size: 12px; line-height: 1.4; }
@@ -128,7 +130,7 @@ body > header > .note {display:none}
 <body tabindex="-1">
 <div id="busyBanner" hidden><span class="spinner" aria-hidden="true"></span><span id="busyText">처리 중...</span></div>
 <header>
-  <div class="header-row"><h1>Isaac Sim을 이용한 물류창고 AGV Robot Agentic 체험</h1><div class="header-actions"><button id="nextExperience" data-action="prepare_next_experience">다음 체험 준비</button></div></div>
+  <div class="header-row"><h1>Isaac Sim 물류창고 AGV Robot Agentic 체험(광주과학기술 AI대학원)</h1><div class="header-actions"><button id="nextExperience" data-action="prepare_next_experience">다음 체험 준비</button></div></div>
   <div id="status">홈페이지 연결 · 운영 PC 상태 확인 중</div>
   
 </header>
@@ -147,7 +149,7 @@ body > header > .note {display:none}
       <button class="down" data-hold="robot_backward">↓</button>
     </div>
     <div class="grid" style="margin-top:8px"><button data-action="robot_reset" title="AGV의 위치와 방향을 생성 당시로 복원합니다">로봇 시작 위치로</button><button data-action="robot_release">Release Keys</button></div>
-    <details><summary>키보드·정지 조작 안내</summary><p class="note">브라우저가 앞에 있을 때는 ‘키보드 운전 활성화’를 한 번 누른 뒤 화살표 키를 사용합니다. 짧게 눌러도 약 0.45초 이동합니다. STOP은 진행 중인 습도 미션도 취소하고 수동 제어를 즉시 복구합니다. 3.0m 감속·회피, 1.7m 정지·선회, 1.4m 긴급정지.</p></details>
+    
   </div>
 <div class="operator-tile operator-messages"><h3>판단·진행 메시지</h3><div id="judgmentPanel" class="judgment" data-kind="sensor">
       <div class="judgment-bubble">
@@ -176,57 +178,58 @@ body > header > .note {display:none}
       <option value="learned" disabled>학습 모델 주행 · 연결 확인 전</option>
     </select></label>
     <div class="grid"><button id="navigationApply" type="button">선택한 방식 적용</button><button data-action="navigation_refresh">연결 상태 확인</button></div>
-    <ul id="navigationAvailability"></ul>
-    <p class="note">학습 모델: NoMaD가 AGV 카메라로 경로 후보를 생성합니다. 목표 방향 정렬과 후보의 목표 접근·충돌 여유 검사는 공통 제어를 사용합니다.</p>
+    <details><summary>주행 연결 상태</summary><ul id="navigationAvailability"></ul></details>
+    
     <p>아래 지도의 빈 바닥을 클릭해 목표를 선택한 뒤 주행 버튼을 누르세요.</p>
     <svg id="navigationMap" viewBox="0 0 440 440" role="img" aria-label="목표점 선택 지도. 위에서 본 장면이며 위쪽이 +Y, 오른쪽이 +X입니다."></svg>
-    <p class="note">파란색: AGV와 전방 방향 · 회색: 장애물 · 초록색: 선택한 목표<br>위에서 본 장면입니다. 위쪽 +Y / 오른쪽 +X · 지도 범위 ±11m, 목표 선택 범위 ±10m</p>
+    
     <p id="navigationMapNote" role="status">장면 위치를 불러오는 중입니다.</p>
     <details><summary>좌표 직접 입력</summary>
     <div class="grid"><label>목표 X (m)<input id="navigationGoalX" type="number" value="-1" min="-10" max="10" step="0.5"></label><label>목표 Y (m)<input id="navigationGoalY" type="number" value="-3" min="-10" max="10" step="0.5"></label></div>
     </details>
     <button id="navigationGo">선택한 목표로 주행</button>
-    <p class="note">목표점으로 접근하는 방식을 선택합니다. 수동 주행·박스 밀기·사람 접근 제한은 공통 제어를 사용합니다. 연결되지 않은 방식은 선택할 수 없으며, 주행 중 연결이 끊어지면 정지합니다.</p>
+    
   </section>
 <div class="scene-controls" style="display:flex;flex-direction:column;gap:12px;min-width:0"><section class="scene"><h2>장면 생성</h2><div class="grid">
     <button data-action="scene_minimal">Lab 1-A Minimal</button>
     <button data-action="scene_warehouse">Lab 1-B Warehouse</button>
     <button data-action="add_agv">Lab 1-C Add AGV</button>
-    <button data-action="humidity_prepare">Lab 2 Humidity</button>
+    <button id="sceneClear" type="button" class="danger">빈 상태로 초기화</button>
   </div></section>
 <section class="temperature"><h2>습도 미션</h2><div class="grid">
+    <button data-action="humidity_prepare">습도 미션 시작</button>
     <button data-action="humidity_up">습도 시뮬레이션 +5%p</button><button data-action="humidity_down">습도 시뮬레이션 -5%p</button>
   </div>
   <div class="mission-readout" role="status" aria-live="polite">
     <div><strong>버튼 · 연습 습도</strong><span id="missionUiHumidity">측정 대기</span></div>
     <div><strong>USB · 실제 습도</strong><span id="missionUsbHumidity">센서 대기</span></div>
     <div><strong>USB · 실제 온도</strong><span id="missionUsbTemperature">센서 대기</span></div>
-    <small>변화: 직전 입력·측정 대비 / 기준 대비: 미션 판단값<br>습도 미션: 20초 이내 +20%p 상승 · 버튼과 센서는 각각 판단</small>
+    
   </div></section>
 <section class="worker"><h2>Worker</h2><div class="grid three">
     <button data-action="worker_start">Start</button><button data-action="worker_stop">Stop</button><button data-action="worker_reset">Reset</button>
     <button data-action="worker_rotate">Rotate +45°</button><button data-action="worker_smaller">Smaller</button><button data-action="worker_larger">Larger</button>
   </div></section></div>
-<section class="object-editor room-editor"><h2>방·전체 공간 교체</h2>
-    <button id="roomReset" type="button" disabled>현재 공간 처음으로</button><p class="note">현재 공간을 다시 불러옵니다. 추가·삭제·배치 편집은 초기화되고, 일반 공간은 AGV를 다시 추가해야 합니다.</p>
+<div hidden inert><section class="object-editor room-editor"><h2>방·전체 공간 교체</h2>
+    <button id="roomReset" type="button" disabled>현재 공간 처음으로</button><button id="sceneTestOpen" type="button">대용량 신규 장면 테스트</button>
     <label>공간 종류<select id="roomKind"><option value="warehouse">기존 창고</option><option value="empty">빈 실습실</option><option value="classroom">교실</option><option value="usd">내 USD 공간 파일</option></select></label>
     <div id="roomUsdFields" hidden>
       <label>준비된 공간 선택<select id="roomLibrary"><option value="">공간 목록 확인 중…</option></select></label><button data-action="room_refresh" type="button">공간 목록 새로고침</button><p class="note" id="roomLibraryNote">공간을 이름으로 선택하면 됩니다.</p><details><summary>고급 설정 · 운영 PC 경로 직접 입력</summary><label>USD 공간 파일 경로<input id="roomFile" placeholder="운영 PC의 USD 파일 경로"></label></details>
-      <div id="roomDrop" tabindex="0" role="button" aria-label="공간 파일 추가" style="border:2px dashed #7b9bac;border-radius:8px;padding:14px;margin:8px 0;cursor:pointer">공간 파일을 여기로 끌어 놓거나 클릭해 선택<input id="roomUpload" type="file" accept=".usd,.usda,.usdc,.usdz,.zip" hidden><p class="note">USD/USDA/USDC/USDZ/ZIP · 최대 20MB. ZIP은 텍스처 폴더와 함께 올리세요.</p></div><p id="roomUploadStatus" role="status" class="note"></p><label>공간 크기 배율<input id="roomScale" type="number" min="0.001" max="1000" step="0.1" value="1"></label>
+      <div id="roomDrop" tabindex="0" role="button" aria-label="공간 파일 추가" style="border:2px dashed #7b9bac;border-radius:8px;padding:14px;margin:8px 0;cursor:pointer">공간 파일을 여기로 끌어 놓거나 클릭해 선택<input id="roomUpload" type="file" accept=".usd,.usda,.usdc,.usdz,.zip" hidden></div><p id="roomUploadStatus" role="status" class="note"></p><label>공간 크기 배율<input id="roomScale" type="number" min="0.001" max="1000" step="0.1" value="1"></label>
       <div class="grid three"><label>위치 보정 X (m)<input id="roomX" type="number" value="0" step="0.1"></label><label>Y (m)<input id="roomY" type="number" value="0" step="0.1"></label><label>Z (m)<input id="roomZ" type="number" value="0" step="0.1"></label></div>
-      <p class="note">USD/USDA/USDC/USDZ 지원. 길이 단위·위쪽 축을 변환하고 바닥과 중심을 맞춥니다. 외부 텍스처 파일도 같은 경로 구조로 함께 있어야 합니다. 관절 없는 방·건물 환경을 사용하세요.</p>
+      
     </div>
     <button id="roomApply" type="button" style="width:100%">이 공간으로 교체</button>
     <label><input id="roomIncludeLab" type="checkbox" checked style="width:auto"> Worker·습도 미션 박스 포함</label>
-    <p class="note">교체하면 현재 객체 편집과 AGV가 초기화됩니다. 새 공간에서 Add AGV → Lab 2 순서로 준비하세요. 외부 공간에서는 바닥 높이와 AGV 통로를 확인하세요.</p>
+    
     <hr>
     <label>현재 장면 저장 이름<input id="roomSaveName" placeholder="예: 책상과 Worker를 바꾼 방" maxlength="60"></label>
     <button id="roomSave" type="button" style="width:100%">현재 편집 상태 저장</button>
     <label>저장된 장면<select id="roomSaved"><option value="">저장된 장면을 선택하세요</option></select></label>
     <div class="grid"><button id="roomLoad" type="button">저장한 상태로 불러오기</button><button data-action="room_refresh" type="button">저장 목록 새로고침</button></div>
-    <p class="note">추가·삭제·모델·배치·Worker·AGV가 현재 상태 그대로 새 파일에 저장됩니다. 같은 이름으로 저장해도 이전 파일을 덮어쓰지 않습니다. 저장 위치: 프로젝트의 saved_scenes 폴더. 외부 텍스처 원본 파일도 함께 유지하세요.</p>
+    
     <p class="note" id="roomCurrent">현재 공간 확인 중...</p>
-  </section>
+  </section></div>
 
   
 
@@ -234,19 +237,21 @@ body > header > .note {display:none}
 
   
 
-  <section class="object-editor" id="objectEditorDrop"><h2>객체·Worker 편집</h2><div class="mission-readout"><p id="sceneSaveState" role="status">공간 편집 후 저장하면 다음 실행에도 유지됩니다.</p><div class="grid"><button id="sceneSaveCurrent" type="button">저장 · 다음 실행에 복원</button><button id="sceneDoNotSave" type="button">저장 안 함</button></div></div>
+  <dialog id="sceneTestDialog" class="scene-test-dialog"><h2>대용량 신규 장면 테스트</h2><label>USD 장면 파일 경로<input id="sceneTestPath" type="text" placeholder="/home/user/scenes/new_scene.usd"></label><div class="grid"><button id="sceneTestPick" type="button">폴더에서 선택하기</button><button id="sceneTestApply" type="button">이 경로의 장면 불러오기</button><button id="sceneTestClose" type="button">닫기</button></div><p id="sceneTestStatus" class="note" role="status"></p></dialog>
+<section class="object-editor" id="objectEditorDrop"><h2>객체·Worker 편집</h2><div class="mission-readout"><p id="sceneSaveState" role="status">공간 편집 후 저장하면 다음 실행에도 유지됩니다.</p><div class="grid"><button id="sceneSaveCurrent" type="button">저장 · 다음 실행에 복원</button><button id="sceneDoNotSave" type="button">저장 안 함</button></div></div>
     <div id="objectDrop" class="object-file-drop" tabindex="0" role="button" aria-label="객체 USDA 파일 끌어 놓기 또는 파일 선택" aria-describedby="objectDropHelp">
       <strong>＋ 객체 파일을 여기에 끌어 놓으세요</strong>
       <span>USDA · USD · USDC · USDZ · ZIP</span>
       <span class="object-file-pick">또는 클릭하여 파일 선택</span>
-      <small id="objectDropHelp">최대 20MB · ZIP은 텍스처 폴더와 함께 올리세요.<br>파일을 올린 뒤 아래 ‘새 객체 추가’ 또는 ‘선택 객체에 적용·교체’를 누르세요.</small>
+      <small id="objectDropHelp">USD·ZIP · 최대 20MB</small>
       <input id="objectUpload" type="file" accept=".usd,.usda,.usdc,.usdz,.zip" hidden>
     </div>
     <p id="objectUploadStatus" role="status" class="note"></p>
     <p class="note" id="objectSelectionState">Isaac Sim에서 객체를 클릭하면 자동으로 표시됩니다.</p>
     <label>현재 객체<select id="objectList"><option value="">객체를 선택하세요</option></select></label>
     <div class="grid"><button id="objectLoad" type="button">선택 객체 불러오기</button><button id="objectNew" type="button">새 객체 입력</button></div>
-    <label>객체 이름<input id="objectId" value="object_new" maxlength="64" placeholder="예: worker_02"></label>
+    <label>추가 유형<select id="objectType"><option value="object">일반 객체</option><option value="person">사람(Worker)</option></select></label>
+    <label>객체 이름<input id="objectId" value="object_new" maxlength="64" placeholder="예: 박스A 또는 홍길동"></label>
     <label>모델<select id="objectModel">
       <option value="box">박스</option><option value="sphere">구</option><option value="cylinder">원기둥</option>
       <option value="worker_custom">Worker (기존 인체 모델)</option><option value="worker">Worker (간단한 모델)</option>
@@ -258,10 +263,10 @@ body > header > .note {display:none}
     <div class="grid three"><label>회전 Z (°)<input id="objectYaw" type="number" value="0" step="15"></label><label>질량 (kg)<input id="objectMass" type="number" value="5" step="1" min="0.01"></label><label>물리<select id="objectMobility"><option value="movable">Movable</option><option value="fixed">Fixed</option><option value="kinematic">Kinematic</option></select></label></div>
     <div class="grid"><button id="objectApply" type="button">선택 객체에 적용·교체</button><button id="objectAdd" type="button">새 객체 추가</button><button id="objectDelete" class="danger" type="button" disabled>선택 객체 삭제</button></div>
     <p class="note" id="objectEditorMessage">객체 목록에서 선택한 뒤 불러오세요.</p>
-    <p class="note">적용 시 시뮬레이션이 일시정지됩니다. 미션은 Lab 2로 다시 준비하세요. Warehouse 재생성 시 편집 내용이 초기화됩니다. 기존 worker_01 크기는 같은 0.5~2배, 물리는 Kinematic입니다. 로컬 USD는 외형을 맞춰 불러오며 충돌은 박스입니다.</p>
+    
   </section>
 
-  <span id="viewportMode" hidden></span>
+  <div hidden inert><span id="viewportMode" hidden></span></div>
 
   
 
@@ -272,9 +277,9 @@ body > header > .note {display:none}
     <button data-action="mass">Mass</button><button data-action="smaller">Smaller</button><button data-action="larger">Larger</button>
   </div></section>
 
-  <section class="appearance"><h2>선택 객체 외형</h2><div class="grid">
+  <div hidden inert><section class="appearance"><h2>선택 객체 외형</h2><div class="grid">
     <button data-action="color">Change Color</button><button data-action="model">Change Model</button>
-  </div></section>
+  </div></section></div>
 
   <section class="guide"><h2>8종 자동 체험</h2><div class="guide-grid">
     <div class="guide-item"><strong>1. AGV 이동·회전</strong><br><code>전진 1.5m → 오른쪽 45°</code><button class="auto-experience" data-experience="drive">체험 자동실행</button></div>
@@ -326,8 +331,12 @@ body > header > .note {display:none}
   </section>
 </main>
 <script>
+const selectedDeviceId = new URLSearchParams(location.search).get('device') || '';
 const nativeFetch = window.fetch.bind(window);
 window.fetch = async (...args) => {
+  if(selectedDeviceId && typeof args[0]==='string' && args[0].startsWith('/api/isaac/')){
+    const options=args[1]||{};const headers=new Headers(options.headers);headers.set('X-Isaac-Device',selectedDeviceId);args[1]={...options,headers};
+  }
   const response = await nativeFetch(...args);
   if (response.status === 401) {
     window.top.location.replace('/agv');
@@ -420,6 +429,7 @@ function loadEditorObject(o) {
   objectInput('objectList').value = o.id;
   for (const [id,v] of Object.entries({objectId:o.id,objectModel:o.model,objectUsd:o.usd,objectX:o.position[0],objectY:o.position[1],objectZ:o.position[2],objectSx:o.scale[0],objectSy:o.scale[1],objectSz:o.scale[2],objectYaw:o.yaw,objectMass:o.mass,objectMobility:o.mobility})) objectInput(id).value=v;
   objectInput('objectId').readOnly=true;
+  objectInput('objectType').value=(o.model==='worker_custom'||o.model==='worker')?'person':'object';
   objectInput('objectUsdRow').hidden=o.model!=='usd';
 }
 function clearEditorSelection() {
@@ -458,6 +468,10 @@ function refreshEditor(data) {
   objectInput('viewportMode').textContent = data.viewport_only ? '장면만 보기 · 패널 숨김' : '일반 편집 화면';
 }
 objectInput('objectModel').addEventListener('change', () => { objectInput('objectUsdRow').hidden = objectInput('objectModel').value !== 'usd'; });
+objectInput('objectType').addEventListener('change', () => {
+  const person = objectInput('objectType').value === 'person';
+  if (person) { objectInput('objectModel').value='worker_custom'; objectInput('objectUsdRow').hidden=true; }
+});
 function selectEditorObject() {
   const o = editorObjects.find(o => o.id === objectInput('objectList').value);
   if (!o) { clearEditorSelection(); return; }
@@ -477,8 +491,10 @@ objectInput('objectNew').addEventListener('click', () => {
   objectInput('objectDelete').disabled=true;
 });
 function submitObject(action) {
+  const name = objectInput('objectId').value.trim();
+  if (action === 'object_add' && !name) { alert('객체명을 입력하세요.'); objectInput('objectId').focus(); return; }
   const num = id => Number(objectInput(id).value);
-  send(action,{id:objectInput('objectId').value,model:objectInput('objectModel').value,usd:objectInput('objectUsd').value,
+  send(action,{id:name,object_type:objectInput('objectType').value,model:objectInput('objectModel').value,usd:objectInput('objectUsd').value,
     position:['objectX','objectY','objectZ'].map(num),scale:['objectSx','objectSy','objectSz'].map(num),yaw:num('objectYaw'),mass:num('objectMass'),mobility:objectInput('objectMobility').value});
 }
 objectInput('objectApply').addEventListener('click', () => submitObject('object_apply'));
@@ -515,6 +531,15 @@ objectInput('roomApply').addEventListener('click', () => send('room_change', {
   scale:Number(objectInput('roomScale').value), offset:['roomX','roomY','roomZ'].map(id=>Number(objectInput(id).value)),
   include_lab:!objectInput('roomIncludeLab').disabled && objectInput('roomIncludeLab').checked
 }));
+objectInput('sceneClear').addEventListener('click',()=>{
+ if(confirm('로봇과 미션을 정지하고 현재 장면을 모두 비웁니다. 저장하지 않은 편집은 사라집니다. 저장한 장면 파일은 유지됩니다. 빈 상태로 초기화하시겠습니까?'))send('scene_clear',{confirmed:true});
+});
+const sceneTestDialog=objectInput('sceneTestDialog');
+let sceneTestLoading=false, sceneTestSawBusy=false;
+objectInput('sceneTestOpen').addEventListener('click',()=>sceneTestDialog.showModal());
+objectInput('sceneTestPick').addEventListener('click',()=>{objectInput('sceneTestStatus').textContent='파일 선택창을 여는 중…';send('scene_pick_file');});
+objectInput('sceneTestApply').addEventListener('click',()=>{const path=objectInput('sceneTestPath').value.trim();if(!path){objectInput('sceneTestStatus').textContent='USD 장면 파일 경로를 입력하세요.';objectInput('sceneTestPath').focus();return;}sceneTestLoading=true;sceneTestSawBusy=false;objectInput('sceneTestStatus').textContent='대용량 장면 로딩을 시작합니다…';send('room_change',{kind:'usd',usd_path:path,scale:1,offset:[0,0,0],include_lab:true});});
+objectInput('sceneTestClose').addEventListener('click',()=>sceneTestDialog.close());
 objectInput('roomReset').addEventListener('click',()=>{
  if(confirm('현재 공간을 처음 불러온 상태로 다시 만듭니다. 추가·삭제·배치 편집이 사라지고 큰 USD는 다시 로딩해야 합니다. 계속하시겠습니까?'))send('room_reset',{confirmed:true});
 });
@@ -846,7 +871,8 @@ async function refreshStatus() {
     refreshEditor(data);
     refreshJudgment(data);
     refreshNavigation(data);
-    const roomNames = {warehouse:'기존 창고',empty:'빈 실습실',classroom:'교실',usd:'USD 공간',minimal:'최소 시험'};
+    const roomNames = {unloaded:'로딩 전 · 빈 상태',warehouse:'기존 창고',empty:'빈 실습실',classroom:'교실',usd:'USD 공간',minimal:'최소 시험'};
+    if (data.scene_test_path) objectInput('sceneTestPath').value = data.scene_test_path;
     objectInput('roomCurrent').textContent = '현재 공간: ' + (roomNames[data.room_kind] || data.room_kind || '--') + (data.room_source ? ' · ' + data.room_source : '');
     objectInput('roomApply').disabled = Boolean(data.operation_busy);
     objectInput('roomSave').disabled = Boolean(data.operation_busy);
@@ -867,6 +893,16 @@ async function refreshStatus() {
     document.getElementById('isaacMessage').textContent = data.message || '정상 연결';
     busyBanner.hidden = !data.operation_busy;
     busyText.textContent = roomProgressDisplay() || data.message || data.operation_label || '처리 중...';
+    if (sceneTestLoading) {
+      const sceneStatus = objectInput('sceneTestStatus');
+      if (data.operation_busy) {
+        sceneTestSawBusy = true;
+        sceneStatus.textContent = roomProgressDisplay() || data.message || '대용량 장면을 처리하는 중…';
+      } else if (sceneTestSawBusy) {
+        sceneStatus.textContent = data.message || '대용량 장면 처리가 완료되었습니다.';
+        sceneTestLoading = false;
+      }
+    }
     document.body.setAttribute('aria-busy', data.operation_busy ? 'true' : 'false');
   } catch (error) {
     document.getElementById('isaacMessage').textContent = '상태 연결 오류: ' + error.message;
