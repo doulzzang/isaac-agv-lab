@@ -1,0 +1,20 @@
+{
+  "asset": "dongshin_school_logo.png",
+  "school_name_ko": "광주동신여자고등학교",
+  "school_name_en": "Gwangju Dongshin Girls' High School",
+  "school_url": "https://kdsg.jge.hs.kr/main/main.php",
+  "school_symbols_url": "https://kdsg.jge.hs.kr/sub/page.php?page_code=intro_02_03",
+  "source_url": "https://kdsg.jge.hs.kr/data_files/skin/skin_res_1/images/common/logo_on.png",
+  "source_css_url": "https://kdsg.jge.hs.kr/data_files/skin/skin_res_1/css/default.css?250317",
+  "source_context": "Official school website header logo for a light background; default.css references images/common/logo_on.png for header.h_type_02 and the hovered header.",
+  "retrieved_date": "2026-10-26",
+  "media_type": "image/png",
+  "width_px": 258,
+  "height_px": 50,
+  "color_mode": "RGBA",
+  "byte_count": 11576,
+  "sha256": "5f3201a4980c276e89fe00f0872eea5467f91c362d1aa9728012979d25d834a9",
+  "modifications": "None. Original PNG bytes downloaded unchanged; aspect ratio preserved when displayed.",
+  "attribution": "광주동신여자고등학교 공식 홈페이지",
+  "rights_note": "Official school identity asset; attribution records provenance and does not imply an open-content license."
+}

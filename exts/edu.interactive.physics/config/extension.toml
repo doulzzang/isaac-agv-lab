@@ -1,0 +1,28 @@
+[package]
+version = "3.5.2"
+title = "Interactive Physics Lab"
+description = "Build a twin, install a standalone PhysX AGV, run a temperature mission, and drive/operate it conversationally through a local LLM (Ollama)"
+category = "Education"
+authors = ["Seung-Hwan Cheon"]
+readme = "docs/README.md"
+
+[dependencies]
+"omni.usd" = {}
+"omni.ui" = {}
+"omni.kit.window.property" = {}
+"omni.kit.window.filepicker" = {}
+"omni.kit.viewport.utility" = {}
+"omni.kit.actions.core" = {}
+"omni.kit.ui.actions" = {}
+"omni.physx" = {}
+"omni.physics.tensors" = {}
+"isaacsim.storage.native" = {}
+
+[[python.module]]
+name = "edu_interactive_physics"
+
+# Lab 3 (conversational control) talks to a locally running Ollama server
+# (https://ollama.com, default http://localhost:11434) over stdlib urllib.
+# No extra Kit dependency is required, but Ollama itself must be installed
+# and running on the machine Isaac Sim runs on, with a tool-calling-capable
+# model pulled (e.g. `ollama pull llama3.1`).

@@ -1,0 +1,14 @@
+{
+  "baseline_build": "20260917_211045",
+  "changed_existing_files": [
+    "exts/edu.interactive.physics/assets/web_control/index.html",
+    "exts/edu.interactive.physics/edu_interactive_physics/extension.py",
+    "exts/edu.interactive.physics/edu_interactive_physics/modbus_temperature.py",
+    "exts/edu.interactive.physics/edu_interactive_physics/web_control.py",
+    "homepage_update/public/agv/control.html",
+    "web_app/index.html"
+  ],
+  "scope_pending": false,
+  "scope": "Current program code snapshot; no homepage deployment; user data preserved",
+  "version": "3.5.2"
+}
